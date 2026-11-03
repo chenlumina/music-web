@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的收藏 · 自然音乐歌单</title>
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+[hidden] { display: none !important; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 108px 24px 80px; }
+.head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; flex-wrap: wrap; }
+.head h1 { margin: 0; font-size: clamp(24px, 3vw, 32px); font-weight: 700; letter-spacing: .03em; }
+.head .sub { font-size: 13px; color: var(--txt3); }
+
+.list { display: flex; flex-direction: column; gap: 14px; }
+.item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px 12px 12px;
+  border-radius: var(--r-card);
+  transition: transform .35s var(--ease), border-color .3s, box-shadow .35s;
+}
+.item:hover { transform: translateY(-3px); border-color: rgba(124,227,171,.28); }
+.thumb {
+  width: 104px; height: 76px; flex: none; border-radius: 12px; overflow: hidden;
+  background: var(--bg2);
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
+.item:hover .thumb img { transform: scale(1.08); }
+.info { flex: 1; min-width: 0; }
+.info h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 5px; font-size: 15.5px; font-weight: 600; }
+.info h3 .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { font-size: 12.5px; color: var(--txt3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item.off { opacity: .62; }
+.item.off .thumb img { filter: grayscale(.7) brightness(.7); }
+.item-main { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; color: inherit; text-decoration: none; }
+.item-main:hover .info h3 .t { color: var(--acc); }
+.info h3 .t { transition: color .25s; }
+.sk-row { display: flex; gap: 16px; padding: 12px 16px 12px 12px; border-radius: var(--r-card); border: 1px solid var(--line); }
+.sk-row .skel { flex: none; }
+.unfav { flex: none; }
+@media (max-width: 560px) {
+  .thumb { width: 84px; height: 64px; }
+  .meta .sep { display: none; }
+  .meta .dt { display: block; margin-top: 2px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="./">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c9 1 16-5.5 16-16-8.5-1-15.5 4-16 12 0 1.4.2 2.8 0 4z"/><path d="M4 20C7 14 11 10.5 15.5 8.5"/></svg>
+      自然音乐歌单
+    </a>
+    <div class="nav-links">
+      <a href="./">返回首页</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <div class="head">
+    <h1>我的收藏</h1>
+    <span class="sub" id="count"></span>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+
+<footer class="footer">
+  <p>收藏的心跳不会说谎 · <a href="./">继续去首页逛逛</a></p>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+const M = window.MUSIC;
+const ICON = M.ICON;
+const list = document.getElementById('list');
+
+const skelRow = '<div class="sk-row"><div class="skel" style="width:104px;height:76px;border-radius:12px"></div>' +
+  '<div style="flex:1"><div class="skel" style="height:15px;width:52%;margin-bottom:9px"></div>' +
+  '<div class="skel" style="height:11px;width:36%"></div></div></div>';
+
+function itemHTML(f, i) {
+  const off = !f.available;
+  return '<div class="item glass' + (off ? ' off' : '') + '" data-reveal style="--d:' + Math.min(i * 60, 420) + 'ms">' +
+    '<a class="item-main" href="' + M.BASE + '/playlist?id=' + f.playlistId + '">' +
+    '<div class="thumb"><img src="' + M.esc(M.coverFor(f)) + '" alt="" loading="lazy"></div>' +
+    '<div class="info">' +
+      '<h3><span class="t">' + M.esc(f.title) + '</span>' + (off ? '<span class="badge off">已下架</span>' : '') + '</h3>' +
+      '<p class="meta">' + M.esc((f.tags || []).join(' / ')) +
+        '<span class="sep"> · </span><span class="dt">收藏于 ' + new Date(f.favoritedAt).toLocaleString('zh-CN') + '</span></p>' +
+    '</div></a>' +
+    (off ? '' : '<button class="heart-btn on unfav" data-id="' + f.playlistId + '" aria-label="取消收藏 ' + M.esc(f.title) + '">' + ICON.heart(true) + '</button>') +
+  '</div>';
+}
+
+async function load() {
+  list.innerHTML = Array.from({ length: 4 }, () => skelRow).join('');
+  try {
+    const r = await M.getJSON(M.BASE + '/api/me/favorites?page=1&size=50');
+    if (r.code === 401) {
+      location.href = M.BASE + '/login.html?redirect=' + encodeURIComponent(location.pathname);
+      return;
+    }
+    if (r.code !== 0) { M.toast(r.message, false); list.innerHTML = ''; return; }
+    const items = r.data.list;
+    document.getElementById('count').textContent = items.length
+      ? '共 ' + items.length + ' 个歌单，随时可以回来听'
+      : '';
+    if (!items.length) {
+      list.innerHTML = '<div class="empty-state glass" style="border-radius:var(--r-panel)">' +
+        '<div class="art">' + ICON.heart(false) + '</div>' +
+        '<h3>还没有收藏</h3><p>在首页遇到心动的歌单，点一下心形按钮就会出现在这里</p>' +
+        '<a class="btn btn-primary" href="./">去首页逛逛</a></div>';
+      return;
+    }
+    list.innerHTML = items.map(itemHTML).join('');
+    M.reveal(list);
+  } catch (e) {
+    list.innerHTML = '<div class="empty-state"><h3>加载失败，请刷新重试</h3></div>';
+  }
+}
+
+list.addEventListener('click', async e => {
+  const btn = e.target.closest('.unfav');
+  if (!btn) return;
+  const id = +btn.dataset.id;
+  if (!confirm('确定取消收藏吗？')) return;
+  btn.disabled = true;
+  try {
+    const r = await M.getJSON(M.BASE + '/api/favorites/' + id, { method: 'DELETE' });
+    if (r.code !== 0) { M.toast(r.message, false); btn.disabled = false; return; }
+    M.toast('已取消收藏');
+    load();
+  } catch (err) {
+    M.toast('网络异常，请重试', false);
+    btn.disabled = false;
+  }
+});
+
+M.navScrollWatch();
+load();
+</script>
+</body>
+</html>

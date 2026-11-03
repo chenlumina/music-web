@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>运营后台 · 自然音乐歌单</title>
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+[hidden] { display: none !important; }
+body { background:
+  radial-gradient(720px 480px at 86% -6%, rgba(124,227,171,.05), transparent 62%),
+  radial-gradient(620px 420px at -8% 104%, rgba(242,192,120,.04), transparent 60%),
+  var(--bg0);
+}
+header {
+  position: sticky; top: 0; z-index: 40;
+  padding: 0 clamp(16px, 4vw, 40px); height: 62px;
+  display: flex; align-items: center;
+  background: rgba(9,15,12,.78);
+  -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--line);
+}
+.bar { width: 100%; max-width: 1160px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+header h1 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16.5px; font-weight: 700; letter-spacing: .02em; }
+header h1 svg { width: 24px; height: 24px; color: var(--acc); }
+.who { font-size: 13px; display: flex; gap: 12px; align-items: center; color: var(--txt2); }
+.who a { color: var(--txt2); text-decoration: none; padding: 7px 12px; border-radius: 999px; transition: all .25s; }
+.who a:hover { color: var(--txt); background: rgba(255,255,255,.07); }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 26px clamp(16px, 3vw, 32px) 56px; }
+
+/* tabs */
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab {
+  padding: 9px 20px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600;
+  color: var(--txt2); background: rgba(255,255,255,.045); border: 1px solid var(--line);
+  transition: all .3s var(--ease);
+}
+.tab:hover { color: var(--txt); border-color: var(--line-strong); transform: translateY(-1px); }
+.tab.on {
+  color: var(--acc-ink); background: linear-gradient(150deg, var(--acc-strong), var(--acc));
+  border-color: transparent; box-shadow: 0 6px 18px rgba(124,227,171,.28);
+}
+
+/* toolbar 与表单控件 */
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+input, select, textarea {
+  padding: 9px 12px; color: var(--txt); font-size: 13.5px; font-family: inherit;
+  background: rgba(255,255,255,.045); border: 1px solid var(--line-strong); border-radius: var(--r-input);
+  transition: border-color .25s, box-shadow .25s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: rgba(124,227,171,.55);
+  box-shadow: 0 0 0 3px rgba(124,227,171,.12);
+}
+input::placeholder, textarea::placeholder { color: var(--txt3); }
+select option { background: var(--panel-solid); }
+button {
+  padding: 9px 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--txt2); background: rgba(255,255,255,.05); border: 1px solid var(--line-strong);
+  transition: all .28s var(--ease); white-space: nowrap;
+}
+button:hover:not(:disabled) { color: var(--txt); border-color: rgba(124,227,171,.4); transform: translateY(-1px); }
+button:active { transform: scale(.97); }
+button.primary {
+  color: var(--acc-ink); background: linear-gradient(150deg, var(--acc-strong), var(--acc));
+  border-color: transparent; box-shadow: 0 6px 18px rgba(124,227,171,.26);
+}
+button.primary:hover:not(:disabled) { color: var(--acc-ink); filter: brightness(1.05); }
+button.danger { color: var(--rose); border-color: rgba(255,143,164,.3); }
+button.danger:hover:not(:disabled) { color: var(--rose); border-color: rgba(255,143,164,.6); background: rgba(255,143,164,.08); }
+button:disabled { opacity: .45; cursor: default; }
+
+/* 表格 */
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: rgba(255,255,255,.028); border: 1px solid var(--line);
+  border-radius: var(--r-card); overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+th, td { padding: 11px 14px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { background: rgba(255,255,255,.035); color: var(--txt3); font-weight: 600; font-size: 12px; letter-spacing: .08em; }
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background .2s; }
+tbody tr:hover { background: rgba(124,227,171,.045); }
+
+.badge { display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge.on { background: var(--acc-dim); color: var(--acc); border: 1px solid rgba(124,227,171,.28); }
+.badge.off { background: rgba(255,255,255,.06); color: var(--txt3); border: 1px solid var(--line); }
+.badge.dis { background: rgba(255,143,164,.1); color: var(--rose); border: 1px solid rgba(255,143,164,.3); }
+.cover-th { width: 56px; height: 38px; object-fit: cover; border-radius: 8px; background: var(--bg2); display: block; }
+.ph {
+  width: 56px; height: 38px; border-radius: 8px;
+  background: linear-gradient(140deg, #1d3128, #101d17);
+  display: flex; align-items: center; justify-content: center; color: var(--acc); font-size: 15px;
+}
+.pager { margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end; align-items: center; font-size: 13px; color: var(--txt3); }
+.empty { text-align: center; color: var(--txt3); padding: 34px 0; }
+.hint { font-size: 12px; color: var(--txt3); margin: 8px 0 0; }
+
+/* 弹窗 */
+dialog {
+  border: 1px solid var(--line-strong); border-radius: var(--r-panel); padding: 0;
+  width: 620px; max-width: 94vw; color: var(--txt);
+  background: linear-gradient(170deg, rgba(30,46,38,.97), rgba(14,22,18,.99));
+  box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(4,8,6,.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+dialog[open] { animation: dlg-in .4s var(--ease); }
+@keyframes dlg-in { from { opacity: 0; transform: translateY(22px) scale(.97); } }
+.dlg-head { padding: 16px 22px 13px; font-size: 16px; font-weight: 700; color: var(--txt); border-bottom: 1px solid var(--line); }
+.dlg-body { padding: 16px 22px; max-height: 66vh; overflow: auto; }
+.dlg-foot { padding: 13px 22px 17px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); }
+.fld { margin-bottom: 13px; }
+.fld label { display: block; font-size: 12.5px; color: var(--txt2); margin-bottom: 6px; font-weight: 500; }
+.fld input[type=text], .fld input[type=number], .fld select, .fld textarea { width: 100%; box-sizing: border-box; }
+.fld textarea { height: 64px; resize: vertical; }
+.cover-row { display: flex; gap: 10px; align-items: center; }
+.cover-row img { width: 88px; height: 58px; object-fit: cover; border-radius: 10px; background: var(--bg2); }
+.tagchecks { display: flex; flex-wrap: wrap; gap: 8px; }
+.tagchecks label {
+  display: flex; align-items: center; gap: 5px; margin: 0;
+  padding: 6px 13px; border: 1px solid var(--line-strong); border-radius: 999px;
+  font-size: 13px; color: var(--txt2); cursor: pointer; transition: all .25s;
+}
+.tagchecks label:hover { border-color: rgba(124,227,171,.4); color: var(--txt); }
+.tagchecks label:has(input:checked) {
+  color: var(--acc-ink); background: var(--acc); border-color: var(--acc); font-weight: 600;
+}
+.trk { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.trk .no { width: 22px; text-align: center; font-size: 12px; color: var(--acc); }
+.trk .tname { flex: 1; }
+.trk .tdur { width: 90px; }
+
+/* toast（JS 会内联覆盖背景色） */
+#toast {
+  position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%);
+  padding: 12px 20px; border-radius: 14px; font-size: 13.5px; color: #fff;
+  border: 1px solid var(--line-strong); box-shadow: var(--shadow-2);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  display: none; z-index: 99; animation: toast-in .4s var(--ease);
+}
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 16px); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c9 1 16-5.5 16-16-8.5-1-15.5 4-16 12 0 1.4.2 2.8 0 4z"/><path d="M4 20C7 14 11 10.5 15.5 8.5"/></svg>
+      自然音乐歌单 · 运营后台
+    </h1>
+    <div class="who">
+      <a href="./">回前台</a>
+      <span id="who"></span>
+      <button onclick="logout()">退出</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="gate" hidden></div>
+
+<div class="wrap" id="app" hidden>
+  <div class="tabs">
+    <div class="tab on" id="t-playlists" onclick="switchTab('playlists')">歌单管理</div>
+    <div class="tab" id="t-tags" onclick="switchTab('tags')">标签管理</div>
+    <div class="tab" id="t-recs" onclick="switchTab('recs')">推荐位管理</div>
+  </div>
+
+  <section id="sec-playlists">
+    <div class="toolbar">
+      <input id="q" placeholder="按标题搜索" style="width:200px">
+      <select id="statusSel">
+        <option value="">全部状态</option>
+        <option value="ONLINE">上架</option>
+        <option value="OFFLINE">下架</option>
+      </select>
+      <button onclick="doSearch()">查询</button>
+      <button class="primary" style="margin-left:auto" onclick="openPlModal(null)">＋ 新增歌单</button>
+    </div>
+    <table>
+      <thead><tr>
+        <th>封面</th><th>标题</th><th>标签</th><th>曲目数</th><th>收藏数</th><th>状态</th><th>更新时间</th><th>操作</th>
+      </tr></thead>
+      <tbody id="plRows"></tbody>
+    </table>
+    <div class="pager">
+      <span id="plPageInfo"></span>
+      <button id="plPrev" onclick="plNav(-1)">上一页</button>
+      <button id="plNext" onclick="plNav(1)">下一页</button>
+    </div>
+  </section>
+
+  <section id="sec-tags" hidden>
+    <div class="toolbar">
+      <input id="tagName" placeholder="标签名称" style="width:160px">
+      <input id="tagSort" type="number" placeholder="排序" style="width:90px" value="0">
+      <button class="primary" onclick="addTag()">＋ 添加标签</button>
+    </div>
+    <table>
+      <thead><tr><th>名称</th><th>绑定歌单数</th><th>排序</th><th>操作</th></tr></thead>
+      <tbody id="tagRows"></tbody>
+    </table>
+    <p class="hint">删除已绑定歌单的标签时，需二次确认（确认后自动解除关联再删除）。</p>
+  </section>
+
+  <section id="sec-recs" hidden>
+    <div class="toolbar">
+      <span class="hint" style="margin:0">前台首页按排序展示启用中的推荐位；停用或无配置时前台自动降级。</span>
+      <button class="primary" style="margin-left:auto" onclick="openRecModal(null)">＋ 新增推荐位</button>
+    </div>
+    <table>
+      <thead><tr><th>排序</th><th>标题</th><th>图片</th><th>跳转歌单</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody id="recRows"></tbody>
+    </table>
+  </section>
+</div>
+
+<dialog id="plModal">
+  <div class="dlg-head" id="plModalTitle">新增歌单</div>
+  <div class="dlg-body">
+    <div class="fld"><label>标题（必填）</label><input type="text" id="plTitle" maxlength="100"></div>
+    <div class="fld"><label>描述</label><textarea id="plDesc" maxlength="2000"></textarea></div>
+    <div class="fld"><label>封面（jpg/png/webp，≤2MB）</label>
+      <div class="cover-row">
+        <img id="plCoverImg" hidden alt="">
+        <input type="file" id="plCoverFile" accept=".jpg,.jpeg,.png,.webp" onchange="uploadPlCover(this)">
+        <input type="text" id="plCover" placeholder="或直接粘贴图片地址" oninput="previewCover()" style="flex:1">
+      </div>
+    </div>
+    <div class="fld"><label>绑定标签（上架前至少要有一个）</label><div class="tagchecks" id="tagChecks"></div></div>
+    <div class="fld"><label>曲目（按顺序编号）</label>
+      <div id="trackList"></div>
+      <button onclick="addTrackRow('', 0)">＋ 添加曲目</button>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button onclick="document.getElementById('plModal').close()">取消</button>
+    <button class="primary" onclick="savePlaylist()">保存</button>
+  </div>
+</dialog>
+
+<dialog id="recModal">
+  <div class="dlg-head" id="recModalTitle">新增推荐位</div>
+  <div class="dlg-body">
+    <div class="fld"><label>标题（必填）</label><input type="text" id="recTitle" maxlength="100"></div>
+    <div class="fld"><label>图片（可选，jpg/png/webp，≤2MB）</label>
+      <div class="cover-row">
+        <img id="recImgImg" hidden alt="">
+        <input type="file" id="recImgFile" accept=".jpg,.jpeg,.png,.webp" onchange="uploadRecImg(this)">
+        <input type="text" id="recImg" placeholder="或直接粘贴图片地址" oninput="previewRecImg()" style="flex:1">
+      </div>
+    </div>
+    <div class="fld"><label>跳转歌单（可选）</label><select id="recPlaylist"><option value="">不跳转（纯展示）</option></select></div>
+    <div class="fld"><label>排序（小的靠前）</label><input type="number" id="recSort" value="0" min="0"></div>
+    <div class="fld"><label><input type="checkbox" id="recEnabled" checked> 启用（前台可见）</label></div>
+  </div>
+  <div class="dlg-foot">
+    <button onclick="document.getElementById('recModal').close()">取消</button>
+    <button class="primary" onclick="saveRec()">保存</button>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+const BASE = (function () {
+  const seg = location.pathname.split('/')[1] || '';
+  return seg && !seg.includes('.') ? '/' + seg : '';
+})();
+const API = BASE + '/api';
+let me = null;
+let tagsCache = [];
+let editingPlId = null, editingRecId = null, editingTagId = null;
+let plPage = 1, plTotal = 0, recRows = [];
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function val(id) { return document.getElementById(id).value; }
+function req(method, body) {
+  return { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+}
+async function api(url, opt = {}) {
+  let r;
+  try { r = await fetch(url, opt).then(r => r.json()); }
+  catch (e) { throw { code: -1, message: '网络异常，请重试' }; }
+  if (r.code !== 0) throw r;
+  return r.data;
+}
+let toastTimer = null;
+function toast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? 'rgba(18,58,41,.92)' : 'rgba(61,26,32,.92)';
+  t.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.display = 'none', 2600);
+}
+function fmtTime(iso) { return iso ? iso.slice(0, 16).replace('T', ' ') : ''; }
+
+async function boot() {
+  try { me = await api(API + '/auth/me'); } catch (e) { me = null; }
+  if (!me || me.role !== 'ADMIN') {
+    const gate = document.getElementById('gate');
+    gate.hidden = false;
+    gate.innerHTML = me
+      ? '<div class="empty">当前账号不是管理员，无法访问后台。</div>'
+      : '<div class="empty">请先<a href="' + BASE + '/login.html?redirect=' + encodeURIComponent(BASE + '/admin.html') + '">登录</a>管理员账号。</div>';
+    return;
+  }
+  document.getElementById('who').textContent = me.username;
+  document.getElementById('app').hidden = false;
+  switchTab('playlists');
+}
+
+async function logout() {
+  await fetch(API + '/auth/logout', { method: 'POST' });
+  location.reload();
+}
+
+function switchTab(name) {
+  for (const s of ['playlists', 'tags', 'recs']) {
+    document.getElementById('t-' + s).classList.toggle('on', s === name);
+    document.getElementById('sec-' + s).hidden = s !== name;
+  }
+  if (name === 'playlists') loadPlaylists();
+  if (name === 'tags') refreshTags();
+  if (name === 'recs') loadRecs();
+}
+
+/* ===== 歌单管理 ===== */
+async function loadPlaylists() {
+  const qs = new URLSearchParams({ page: plPage, size: 10 });
+  const q = val('q').trim(), st = val('statusSel');
+  if (q) qs.set('q', q);
+  if (st) qs.set('status', st);
+  try {
+    const data = await api(API + '/admin/playlists?' + qs);
+    plTotal = data.total;
+    const rows = data.list.map(p => `<tr>
+      <td>${p.coverUrl ? `<img class="cover-th" src="${esc(p.coverUrl)}" loading="lazy" alt="">` : '<div class="ph">♪</div>'}</td>
+      <td>${esc(p.title)}</td>
+      <td>${esc((p.tags || []).join(' / ')) || '<span class="hint">无标签</span>'}</td>
+      <td>${p.trackCount}</td>
+      <td>${p.favoriteCount}</td>
+      <td><span class="badge ${p.status === 'ONLINE' ? 'on' : 'off'}">${p.status === 'ONLINE' ? '上架' : '下架'}</span></td>
+      <td>${fmtTime(p.updatedAt)}</td>
+      <td>
+        <button onclick="openPlModal(${p.id})">编辑</button>
+        ${p.status === 'ONLINE'
+          ? `<button class="danger" onclick="toggleStatus(${p.id},'OFFLINE')">下架</button>`
+          : `<button onclick="toggleStatus(${p.id},'ONLINE')">上架</button>`}
+      </td>
+    </tr>`).join('');
+    document.getElementById('plRows').innerHTML = rows || '<tr><td colspan="8" class="empty">暂无歌单</td></tr>';
+    const pages = Math.max(1, Math.ceil(plTotal / 10));
+    document.getElementById('plPageInfo').textContent = `共 ${plTotal} 条 · 第 ${plPage} / ${pages} 页`;
+    document.getElementById('plPrev').disabled = plPage <= 1;
+    document.getElementById('plNext').disabled = plPage >= pages;
+  } catch (e) { toast(e.message, false); }
+}
+function doSearch() { plPage = 1; loadPlaylists(); }
+function plNav(d) { plPage += d; loadPlaylists(); }
+
+async function toggleStatus(id, target) {
+  try {
+    await api(`${API}/admin/playlists/${id}/status`, req('POST', { status: target }));
+    toast(target === 'ONLINE' ? '已上架' : '已下架');
+    loadPlaylists();
+  } catch (e) { toast(e.message, false); }
+}
+
+async function refreshTags() {
+  tagsCache = await api(API + '/admin/tags');
+  renderTagChecks();
+  if (!document.getElementById('sec-tags').hidden) renderTagTable();
+}
+function renderTagChecks() {
+  document.getElementById('tagChecks').innerHTML = tagsCache.map(t =>
+    `<label><input type="checkbox" value="${t.id}">${esc(t.name)}</label>`).join('') || '<span class="hint">还没有标签，请先到「标签管理」添加</span>';
+}
+
+async function openPlModal(id) {
+  editingPlId = id;
+  try { await refreshTags(); } catch (e) { toast(e.message, false); return; }
+  document.getElementById('plModalTitle').textContent = id ? '编辑歌单' : '新增歌单';
+  document.getElementById('plTitle').value = '';
+  document.getElementById('plDesc').value = '';
+  document.getElementById('plCover').value = '';
+  document.getElementById('plCoverImg').hidden = true;
+  document.querySelectorAll('#tagChecks input').forEach(i => i.checked = false);
+  document.getElementById('trackList').innerHTML = '';
+  if (id) {
+    try {
+      const d = await api(`${API}/admin/playlists/${id}`);
+      document.getElementById('plTitle').value = d.title;
+      document.getElementById('plDesc').value = d.description ?? '';
+      document.getElementById('plCover').value = d.coverUrl ?? '';
+      previewCover();
+      const ids = new Set(d.tags.map(t => t.id));
+      document.querySelectorAll('#tagChecks input').forEach(i => i.checked = ids.has(Number(i.value)));
+      (d.tracks || []).forEach(t => addTrackRow(t.title, t.durationSec));
+    } catch (e) { toast(e.message, false); return; }
+  }
+  document.getElementById('plModal').showModal();
+}
+
+function previewCover() {
+  const img = document.getElementById('plCoverImg');
+  const url = val('plCover').trim();
+  if (url) { img.src = url; img.hidden = false; } else { img.hidden = true; }
+}
+async function uploadPlCover(input) {
+  if (!input.files.length) return;
+  const fd = new FormData();
+  fd.append('file', input.files[0]);
+  try {
+    const data = await api(API + '/admin/upload', { method: 'POST', body: fd });
+    document.getElementById('plCover').value = data.url;
+    previewCover();
+    toast('封面上传成功');
+  } catch (e) { toast(e.message, false); }
+  input.value = '';
+}
+
+function addTrackRow(title, dur) {
+  const div = document.createElement('div');
+  div.className = 'trk';
+  div.innerHTML = `<span class="no"></span>
+    <input type="text" class="tname" placeholder="曲目名称" maxlength="100">
+    <input type="number" class="tdur" min="0" max="86400" placeholder="秒">
+    <button class="danger" onclick="this.parentElement.remove();renumber()">删除</button>`;
+  div.querySelector('.tname').value = title ?? '';
+  div.querySelector('.tdur').value = dur ?? 0;
+  document.getElementById('trackList').appendChild(div);
+  renumber();
+}
+function renumber() {
+  document.querySelectorAll('#trackList .trk .no').forEach((n, i) => n.textContent = i + 1);
+}
+
+async function savePlaylist() {
+  const title = val('plTitle').trim();
+  if (!title) { toast('标题不能为空', false); return; }
+  const tracks = [...document.querySelectorAll('#trackList .trk')].map(row => ({
+    title: row.querySelector('.tname').value.trim(),
+    durationSec: parseInt(row.querySelector('.tdur').value || '0', 10) || 0
+  }));
+  if (tracks.some(t => !t.title)) { toast('曲目名称不能为空', false); return; }
+  const tagIds = [...document.querySelectorAll('#tagChecks input:checked')].map(i => Number(i.value));
+  const body = { title, description: val('plDesc').trim(), coverUrl: val('plCover').trim(), tagIds, tracks };
+  try {
+    if (editingPlId) await api(`${API}/admin/playlists/${editingPlId}`, req('PUT', body));
+    else await api(API + '/admin/playlists', req('POST', body));
+    toast('保存成功');
+    document.getElementById('plModal').close();
+    loadPlaylists();
+  } catch (e) { toast(e.message, false); }
+}
+
+/* ===== 标签管理 ===== */
+async function renderTagTable() {
+  const rows = tagsCache.map(t => editingTagId === t.id ? `<tr>
+      <td><input type="text" id="etName" value="${esc(t.name)}" maxlength="50" style="width:140px"></td>
+      <td>${t.playlistCount}</td>
+      <td><input type="number" id="etSort" value="${t.sortOrder}" style="width:80px"></td>
+      <td><button class="primary" onclick="saveTagEdit(${t.id})">保存</button>
+          <button onclick="editingTagId=null;renderTagTable()">取消</button></td>
+    </tr>` : `<tr>
+      <td>${esc(t.name)}</td>
+      <td>${t.playlistCount}</td>
+      <td>${t.sortOrder}</td>
+      <td><button onclick="editingTagId=${t.id};renderTagTable()">编辑</button>
+          <button class="danger" onclick="deleteTag(${t.id})">删除</button></td>
+    </tr>`).join('');
+  document.getElementById('tagRows').innerHTML = rows || '<tr><td colspan="4" class="empty">暂无标签</td></tr>';
+}
+async function addTag() {
+  const name = val('tagName').trim();
+  if (!name) { toast('标签名不能为空', false); return; }
+  try {
+    await api(API + '/admin/tags', req('POST', { name, sortOrder: parseInt(val('tagSort') || '0', 10) || 0 }));
+    document.getElementById('tagName').value = '';
+    toast('标签已添加');
+    refreshTags();
+  } catch (e) { toast(e.message, false); }
+}
+async function saveTagEdit(id) {
+  try {
+    await api(`${API}/admin/tags/${id}`, req('PUT', {
+      name: val('etName').trim(), sortOrder: parseInt(val('etSort') || '0', 10) || 0 }));
+    editingTagId = null;
+    toast('已保存');
+    refreshTags();
+  } catch (e) { toast(e.message, false); }
+}
+async function deleteTag(id) {
+  try {
+    await api(`${API}/admin/tags/${id}`, { method: 'DELETE' });
+    toast('已删除');
+    refreshTags();
+  } catch (e) {
+    if (e.code === 409 && confirm(e.message + '\n是否解除全部关联并删除该标签？')) {
+      try {
+        await api(`${API}/admin/tags/${id}?force=1`, { method: 'DELETE' });
+        toast('已解除关联并删除');
+        refreshTags();
+      } catch (e2) { toast(e2.message, false); }
+    } else if (e.code !== 409) {
+      toast(e.message, false);
+    }
+  }
+}
+
+/* ===== 推荐位管理 ===== */
+async function loadRecs() {
+  try {
+    const [plData, recData] = await Promise.all([
+      api(API + '/admin/playlists?page=1&size=50'),
+      api(API + '/admin/recommendations')
+    ]);
+    const opts = plData.list.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('');
+    document.getElementById('recPlaylist').innerHTML = '<option value="">不跳转（纯展示）</option>' + opts;
+    recRows = recData;
+    document.getElementById('recRows').innerHTML = recData.map(r => `<tr>
+      <td>${r.sortOrder}</td>
+      <td>${esc(r.title)}</td>
+      <td>${r.imageUrl ? `<img class="cover-th" src="${esc(r.imageUrl)}" loading="lazy" alt="">` : '-'}</td>
+      <td>${esc(r.playlistTitle ?? '-')}</td>
+      <td><span class="badge ${r.enabled ? 'on' : 'dis'}">${r.enabled ? '启用中' : '已停用'}</span></td>
+      <td>
+        <button onclick="toggleRec(${r.id})">${r.enabled ? '停用' : '启用'}</button>
+        <button onclick="openRecModal(${r.id})">编辑</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">暂无推荐位</td></tr>';
+  } catch (e) { toast(e.message, false); }
+}
+
+function previewRecImg() {
+  const img = document.getElementById('recImgImg');
+  const url = val('recImg').trim();
+  if (url) { img.src = url; img.hidden = false; } else { img.hidden = true; }
+}
+async function uploadRecImg(input) {
+  if (!input.files.length) return;
+  const fd = new FormData();
+  fd.append('file', input.files[0]);
+  try {
+    const data = await api(API + '/admin/upload', { method: 'POST', body: fd });
+    document.getElementById('recImg').value = data.url;
+    previewRecImg();
+    toast('图片上传成功');
+  } catch (e) { toast(e.message, false); }
+  input.value = '';
+}
+
+function openRecModal(id) {
+  editingRecId = id;
+  document.getElementById('recModalTitle').textContent = id ? '编辑推荐位' : '新增推荐位';
+  document.getElementById('recTitle').value = '';
+  document.getElementById('recImg').value = '';
+  document.getElementById('recImgImg').hidden = true;
+  document.getElementById('recPlaylist').value = '';
+  document.getElementById('recSort').value = 0;
+  document.getElementById('recEnabled').checked = true;
+  if (id) {
+    const r = recRows.find(x => x.id === id);
+    document.getElementById('recTitle').value = r.title;
+    document.getElementById('recImg').value = r.imageUrl ?? '';
+    previewRecImg();
+    document.getElementById('recPlaylist').value = r.playlistId ?? '';
+    document.getElementById('recSort').value = r.sortOrder;
+    document.getElementById('recEnabled').checked = r.enabled;
+  }
+  document.getElementById('recModal').showModal();
+}
+
+async function saveRec() {
+  const title = val('recTitle').trim();
+  if (!title) { toast('标题不能为空', false); return; }
+  const body = {
+    title,
+    imageUrl: val('recImg').trim(),
+    playlistId: val('recPlaylist') ? Number(val('recPlaylist')) : null,
+    sortOrder: parseInt(val('recSort') || '0', 10) || 0,
+    enabled: document.getElementById('recEnabled').checked
+  };
+  try {
+    if (editingRecId) await api(`${API}/admin/recommendations/${editingRecId}`, req('PUT', body));
+    else await api(API + '/admin/recommendations', req('POST', body));
+    toast('保存成功');
+    document.getElementById('recModal').close();
+    loadRecs();
+  } catch (e) { toast(e.message, false); }
+}
+
+async function toggleRec(id) {
+  const r = recRows.find(x => x.id === id);
+  try {
+    await api(`${API}/admin/recommendations/${id}`, req('PUT', {
+      title: r.title, imageUrl: r.imageUrl, playlistId: r.playlistId,
+      sortOrder: r.sortOrder, enabled: !r.enabled }));
+    loadRecs();
+  } catch (e) { toast(e.message, false); }
+}
+
+boot();
+</script>
+</body>
+</html>

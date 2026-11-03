@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 · 自然音乐歌单</title>
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+[hidden] { display: none !important; }
+.auth { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100dvh; }
+
+/* 左侧品牌视觉 */
+.auth-side {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 40px 44px;
+}
+.auth-bg { position: absolute; inset: 0; z-index: 0; }
+.auth-bg img { width: 100%; height: 100%; object-fit: cover; }
+.auth-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(200deg, rgba(7,12,10,.2), rgba(7,12,10,.72) 82%),
+              linear-gradient(90deg, rgba(7,12,10,.42), transparent 45%);
+}
+.auth-side .brand { position: relative; z-index: 1; font-size: 18px; }
+.auth-quote { position: relative; z-index: 1; }
+.auth-quote h2 {
+  margin: 0 0 10px; font-size: clamp(24px, 2.6vw, 32px); font-weight: 300;
+  letter-spacing: .06em; line-height: 1.5;
+  text-shadow: 0 2px 24px rgba(0,0,0,.45);
+}
+.auth-quote p { margin: 0; font-size: 14px; color: var(--txt2); letter-spacing: .04em; }
+
+/* 右侧表单 */
+.auth-main { display: grid; place-items: center; padding: 48px 24px; position: relative; }
+.auth-main::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(560px 420px at 82% 12%, rgba(124,227,171,.07), transparent 60%),
+    radial-gradient(480px 380px at 12% 88%, rgba(242,192,120,.05), transparent 60%);
+}
+.form-box { width: min(372px, 100%); }
+.form-box > .head { margin-bottom: 26px; }
+.form-box h1 { margin: 0 0 8px; font-size: 26px; font-weight: 700; letter-spacing: .03em; }
+.form-box .sub { margin: 0; font-size: 13.5px; color: var(--txt3); }
+.m-back { position: absolute; top: 22px; left: 22px; }
+
+/* 滑动指示条 tab */
+.tabs {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr;
+  padding: 4px; margin-bottom: 24px;
+  background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 999px;
+}
+.tabs .ind {
+  position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px);
+  border-radius: 999px;
+  background: linear-gradient(150deg, var(--acc-strong), var(--acc));
+  box-shadow: 0 4px 14px rgba(124,227,171,.3);
+  transition: transform .45s var(--ease);
+}
+.tabs.reg .ind { transform: translateX(100%); }
+.tab {
+  position: relative; z-index: 1; padding: 10px; border: none; background: none;
+  font-size: 14px; font-weight: 600; color: var(--txt3); cursor: pointer;
+  transition: color .3s;
+}
+.tab.on { color: var(--acc-ink); }
+
+.field { margin-bottom: 16px; }
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 46px; }
+.eye {
+  position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
+  color: var(--txt3); cursor: pointer; border: none; background: none;
+  transition: color .25s;
+}
+.eye:hover { color: var(--txt); }
+.eye svg { width: 18px; height: 18px; }
+
+.go { width: 100%; margin-top: 8px; }
+.btn.loading { pointer-events: none; opacity: .8; }
+.btn.loading::after {
+  content: ""; width: 15px; height: 15px; border-radius: 999px;
+  border: 2px solid rgba(8,37,26,.3); border-top-color: var(--acc-ink);
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.msg { min-height: 20px; margin: 12px 0 0; font-size: 13px; color: var(--rose); }
+.hint {
+  margin-top: 22px; padding: 11px 14px; border-radius: var(--r-input);
+  font-size: 12.5px; color: var(--txt3);
+  background: rgba(255,255,255,.035); border: 1px dashed var(--line-strong);
+}
+.hint b { color: var(--txt2); font-weight: 600; }
+.shake { animation: shake .4s; }
+@keyframes shake {
+  20% { transform: translateX(-7px); } 45% { transform: translateX(6px); }
+  70% { transform: translateX(-4px); } 90% { transform: translateX(2px); }
+}
+
+@media (max-width: 760px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth-side { min-height: 218px; padding: 24px 24px 28px; }
+  .auth-quote h2 { font-size: 21px; }
+  .auth-quote p { display: none; }
+  .m-back { top: 18px; left: auto; right: 18px; }
+}
+</style>
+</head>
+<body>
+<main class="auth">
+  <aside class="auth-side">
+    <div class="auth-bg"><img src="assets/img/login.jpg" alt=""></div>
+    <a class="brand" href="./">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c9 1 16-5.5 16-16-8.5-1-15.5 4-16 12 0 1.4.2 2.8 0 4z"/><path d="M4 20C7 14 11 10.5 15.5 8.5"/></svg>
+      自然音乐歌单
+    </a>
+    <div class="auth-quote">
+      <h2>雨声、篝火、海浪，<br>今晚想听哪一种？</h2>
+      <p>登录之后，把喜欢的歌单收进口袋</p>
+    </div>
+  </aside>
+
+  <section class="auth-main">
+    <a class="btn btn-ghost btn-sm m-back" href="./">返回首页</a>
+    <div class="form-box" id="box">
+      <div class="head">
+        <h1>欢迎回来</h1>
+        <p class="sub">登录后可收藏歌单，收藏会一直留在这里</p>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="ind"></div>
+        <button class="tab on" id="tabLogin" type="button">登录</button>
+        <button class="tab" id="tabReg" type="button">注册</button>
+      </div>
+
+      <form id="form">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input id="username" autocomplete="username" placeholder="3 到 20 位字母、数字或下划线" maxlength="20">
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <div class="pw-wrap">
+            <input id="password" type="password" autocomplete="current-password" placeholder="至少 6 位" maxlength="64">
+            <button class="eye" type="button" id="eye" aria-label="显示或隐藏密码"></button>
+          </div>
+        </div>
+        <button class="btn btn-primary go" id="go" type="submit">登录</button>
+        <p class="msg" id="msg"></p>
+      </form>
+
+      <div class="hint">演示账号：<b>admin / admin123</b>（管理员）</div>
+    </div>
+  </section>
+</main>
+
+<script src="assets/app.js"></script>
+<script>
+const M = window.MUSIC;
+const ICON = M.ICON;
+let mode = 'login';
+const redirect = safeRedirect(new URLSearchParams(location.search).get('redirect'));
+
+/** 只允许跳回本站路径，防止 ?redirect= 被构造成外站或 javascript: 链接 */
+function safeRedirect(value) {
+  if (!value) return M.BASE + '/';
+  try {
+    const u = new URL(value, location.origin);
+    if (u.origin !== location.origin) return M.BASE + '/';
+    return u.pathname + u.search + u.hash;
+  } catch (e) {
+    return M.BASE + '/';
+  }
+}
+
+const tabs = document.getElementById('tabs');
+const go = document.getElementById('go');
+const msg = document.getElementById('msg');
+const eye = document.getElementById('eye');
+
+document.getElementById('tabLogin').onclick = () => switchTab('login');
+document.getElementById('tabReg').onclick = () => switchTab('reg');
+
+function switchTab(m) {
+  mode = m;
+  tabs.classList.toggle('reg', m === 'reg');
+  document.getElementById('tabLogin').classList.toggle('on', m === 'login');
+  document.getElementById('tabReg').classList.toggle('on', m === 'reg');
+  document.getElementById('go').textContent = m === 'login' ? '登录' : '注册并登录';
+  msg.textContent = '';
+}
+
+eye.innerHTML = ICON.eye + ICON.eyeOff;
+eye.querySelectorAll('svg')[1].hidden = true;
+eye.onclick = () => {
+  const pw = document.getElementById('password');
+  const show = pw.type === 'password';
+  pw.type = show ? 'text' : 'password';
+  eye.querySelectorAll('svg')[0].hidden = show;
+  eye.querySelectorAll('svg')[1].hidden = !show;
+};
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  if (!username || !password) { fail('请填写用户名和密码'); return; }
+  msg.textContent = '';
+  go.classList.add('loading');
+  go.textContent = mode === 'login' ? '登录中' : '注册中';
+  let ok = false;
+  try {
+    const url = M.BASE + '/api/auth/' + (mode === 'login' ? 'login' : 'register');
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    }).then(r => r.json());
+    if (r.code !== 0) { fail(r.message); return; }
+    ok = true;
+    go.textContent = '欢迎回来，正在进入';
+    location.href = redirect;
+  } catch (err) {
+    fail('网络异常，请重试');
+  } finally {
+    go.classList.remove('loading');
+    if (!ok) go.textContent = mode === 'login' ? '登录' : '注册并登录';
+  }
+});
+
+function fail(text) {
+  msg.textContent = text;
+  const box = document.getElementById('box');
+  box.classList.remove('shake');
+  void box.offsetWidth;
+  box.classList.add('shake');
+}
+</script>
+</body>
+</html>
