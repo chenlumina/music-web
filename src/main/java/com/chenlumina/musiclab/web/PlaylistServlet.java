@@ -36,6 +36,18 @@ public class PlaylistServlet extends HttpServlet {
             return;
         }
 
+        if ("edit".equals(req.getParameter("action"))) {
+            long id = parseId(req.getParameter("id"));
+            Playlist playlist = playlistService.getById(id);
+            if (playlist == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            req.setAttribute("playlist", playlist);
+            req.getRequestDispatcher("/WEB-INF/views/playlist/edit.jsp").forward(req, resp);
+            return;
+        }
+
         List<Playlist> playlists = playlistService.listAll();
         req.setAttribute("playlists", playlists);
         req.setAttribute("total", playlists.size());
@@ -50,6 +62,28 @@ public class PlaylistServlet extends HttpServlet {
         String coverUrl = req.getParameter("coverUrl");
         String status = req.getParameter("status");
 
+        if ("update".equals(req.getParameter("action"))) {
+            long id = parseId(req.getParameter("id"));
+            // 审查发现：不存在的 id 更新 0 行仍会提示成功，先做存在性校验
+            if (playlistService.getById(id) == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            try {
+                playlistService.update(id, title, description, coverUrl, status);
+                String msg = URLEncoder.encode("歌单「" + title.trim() + "」更新成功",
+                        StandardCharsets.UTF_8.name());
+                resp.sendRedirect(req.getContextPath() + "/playlist?msg=" + msg);
+            } catch (ValidateException e) {
+                req.setAttribute("error", e.getMessage());
+                Playlist echo = new Playlist(title, description, coverUrl, status);
+                echo.setId(id);
+                req.setAttribute("playlist", echo);
+                req.getRequestDispatcher("/WEB-INF/views/playlist/edit.jsp").forward(req, resp);
+            }
+            return;
+        }
+
         try {
             long id = playlistService.create(title, description, coverUrl, status);
             String msg = URLEncoder.encode("歌单「" + title.trim() + "」创建成功，编号 " + id,
@@ -63,6 +97,14 @@ public class PlaylistServlet extends HttpServlet {
             req.setAttribute("formCoverUrl", coverUrl);
             req.setAttribute("formStatus", status);
             req.getRequestDispatcher("/WEB-INF/views/playlist/form.jsp").forward(req, resp);
+        }
+    }
+
+    private long parseId(String raw) {
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 }

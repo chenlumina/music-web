@@ -1,0 +1,29 @@
+# 实验五 Docker 路径：Tomcat9 应用 + MySQL8 一键启动
+# 仅在 Docker 守护进程运行时可用；当前环境守护进程未运行，本文件为已备工件。
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: musiclab_root   # 本地演示口令，生产请改 secrets
+      MYSQL_DATABASE: music_lab
+    volumes:
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmusiclab_root"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://db:3306/music_lab?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: musiclab_root
+    depends_on:
+      db:
+        condition: service_healthy

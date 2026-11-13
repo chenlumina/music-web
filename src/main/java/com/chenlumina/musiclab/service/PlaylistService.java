@@ -29,23 +29,10 @@ public class PlaylistService {
      */
     public long create(String title, String description, String coverUrl, String status) {
         String safeTitle = title == null ? "" : title.trim();
-        if (safeTitle.isEmpty()) {
-            throw new ValidateException("歌单标题不能为空");
-        }
-        if (safeTitle.length() > TITLE_MAX) {
-            throw new ValidateException("歌单标题不能超过 " + TITLE_MAX + " 个字符");
-        }
-
         String safeDesc = description == null ? "" : description.trim();
-        if (safeDesc.length() > DESC_MAX) {
-            throw new ValidateException("歌单描述不能超过 " + DESC_MAX + " 个字符");
-        }
-
         String safeStatus = (status == null || status.trim().isEmpty())
                 ? "ONLINE" : status.trim().toUpperCase();
-        if (!ALLOWED_STATUS.contains(safeStatus)) {
-            throw new ValidateException("歌单状态只能是 ONLINE 或 OFFLINE");
-        }
+        checkBasic(safeTitle, safeDesc, safeStatus);
 
         if (playlistDao.countByTitle(safeTitle) > 0) {
             throw new ValidateException("歌单标题「" + safeTitle + "」已存在，请换一个");
@@ -53,5 +40,51 @@ public class PlaylistService {
 
         String safeCover = coverUrl == null ? "" : coverUrl.trim();
         return playlistDao.insert(new Playlist(safeTitle, safeDesc, safeCover, safeStatus));
+    }
+
+    /**
+     * 编辑更新。与新增共用基础校验，但标题查重排除自身（允许保留原标题）。
+     * 真实业务规则：状态改为 OFFLINE 后前台立即不可见（见 listOnline）。
+     */
+    public int update(long id, String title, String description, String coverUrl, String status) {
+        String safeTitle = title == null ? "" : title.trim();
+        String safeDesc = description == null ? "" : description.trim();
+        String safeStatus = (status == null || status.trim().isEmpty())
+                ? "ONLINE" : status.trim().toUpperCase();
+        checkBasic(safeTitle, safeDesc, safeStatus);
+
+        if (playlistDao.countByTitleExcludeId(safeTitle, id) > 0) {
+            throw new ValidateException("歌单标题「" + safeTitle + "」已存在，请换一个");
+        }
+
+        String safeCover = coverUrl == null ? "" : coverUrl.trim();
+        Playlist playlist = new Playlist(safeTitle, safeDesc, safeCover, safeStatus);
+        playlist.setId(id);
+        return playlistDao.update(playlist);
+    }
+
+    public Playlist getById(long id) {
+        return playlistDao.findById(id);
+    }
+
+    /** 前台只读列表：仅上架歌单可见 */
+    public List<Playlist> listOnline() {
+        return playlistDao.findOnline();
+    }
+
+    /** 新增/编辑共用的基础校验，消除两处重复 */
+    private void checkBasic(String safeTitle, String safeDesc, String safeStatus) {
+        if (safeTitle.isEmpty()) {
+            throw new ValidateException("歌单标题不能为空");
+        }
+        if (safeTitle.length() > TITLE_MAX) {
+            throw new ValidateException("歌单标题不能超过 " + TITLE_MAX + " 个字符");
+        }
+        if (safeDesc.length() > DESC_MAX) {
+            throw new ValidateException("歌单描述不能超过 " + DESC_MAX + " 个字符");
+        }
+        if (!ALLOWED_STATUS.contains(safeStatus)) {
+            throw new ValidateException("歌单状态只能是 ONLINE 或 OFFLINE");
+        }
     }
 }

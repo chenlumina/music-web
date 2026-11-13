@@ -27,9 +27,9 @@ public final class DbUtil {
         } catch (IOException e) {
             throw new ExceptionInInitializerError("读取 db.properties 失败：" + e.getMessage());
         }
-        URL = props.getProperty("db.url");
-        USER = props.getProperty("db.username");
-        PASSWORD = props.getProperty("db.password");
+        URL = envOr("DB_URL", props.getProperty("db.url"));
+        USER = envOr("DB_USERNAME", props.getProperty("db.username"));
+        PASSWORD = envOr("DB_PASSWORD", props.getProperty("db.password"));
         try {
             // 显式加载驱动，驱动缺失时会在这里直接暴露 ClassNotFoundException
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -40,6 +40,12 @@ public final class DbUtil {
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    /** 部署外置：优先环境变量（Docker/云），回退 classpath db.properties（本地） */
+    private static String envOr(String key, String fallback) {
+        String v = System.getenv(key);
+        return (v == null || v.isEmpty()) ? fallback : v;
     }
 
     private DbUtil() {

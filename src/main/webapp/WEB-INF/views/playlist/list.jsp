@@ -69,10 +69,12 @@
 
   <div class="head">
     <div>
-      <h1>全部歌单<span class="count num">${empty total ? 0 : total}</span></h1>
-      <span class="sub">后台运营视角：上下架歌单都会列出，前台只展示上架歌单</span>
+      <h1><c:choose><c:when test="${frontMode}">上架歌单</c:when><c:otherwise>全部歌单</c:otherwise></c:choose><span class="count num">${empty total ? 0 : total}</span></h1>
+      <span class="sub"><c:choose><c:when test="${frontMode}">前台只读视角：仅展示上架歌单，无需登录</c:when><c:otherwise>后台运营视角：上下架歌单都会列出，前台只展示上架歌单</c:otherwise></c:choose></span>
     </div>
-    <a class="btn btn-primary" href="${pageContext.request.contextPath}/playlist?action=new">新增歌单</a>
+    <c:if test="${empty frontMode}">
+      <a class="btn btn-primary" href="${pageContext.request.contextPath}/playlist?action=new">新增歌单</a>
+    </c:if>
   </div>
 
   <div class="grid">
@@ -95,6 +97,9 @@
             <div class="pl-body">
               <h3><c:out value="${p.title}"/></h3>
               <p class="pl-desc"><c:out value="${empty p.description ? '暂无描述' : p.description}"/></p>
+              <c:if test="${empty frontMode}">
+                <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/playlist?action=edit&id=${p.id}">编辑</a>
+              </c:if>
               <div class="pl-foot">
                 <span>#${p.id}</span>
                 <span class="num"><fmt:formatDate value="${p.createdAtDate}" pattern="yyyy-MM-dd HH:mm"/></span>
