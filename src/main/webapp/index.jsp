@@ -52,8 +52,9 @@
     <p class="badge">JavaEE8 · javax.servlet · Tomcat9</p>
     <h1>把世界调成静音，<br>听自然开口说话</h1>
     <p>
-      这是《Java EE 企业级开发》课程的训练工程 music-web。业务模型与界面规范沿用个人项目
-      music-web，但技术栈固定为 JavaEE8（javax.*）+ JDBC + Tomcat9，用来完成实验一至实验三的基础训练。
+      这是《Java EE 企业级开发》课程个人项目「自然音乐网站」music-web 的 JavaEE8 实现：
+      技术栈固定为 JavaEE8（javax.*）+ JDBC + Tomcat9，覆盖基础训练与业务闭环
+      （登录、歌单 CRUD、编辑更新、前台仅上架）。
     </p>
   </section>
 
