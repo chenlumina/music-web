@@ -19,8 +19,13 @@ public class PlaylistService {
 
     private final PlaylistDao playlistDao = new PlaylistDao();
 
-    public List<Playlist> listAll() {
-        return playlistDao.findAll();
+    public List<Playlist> listPage(int page, int size) {
+        int safePage = Math.max(page, 1);
+        return playlistDao.findPage((safePage - 1) * size, size);
+    }
+
+    public long countAll() {
+        return playlistDao.countAll();
     }
 
     /**

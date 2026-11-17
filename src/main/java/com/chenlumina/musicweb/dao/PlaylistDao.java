@@ -35,6 +35,38 @@ public class PlaylistDao {
         return result;
     }
 
+    /** 分页查询：admin 列表用，按 id 倒序 */
+    public List<Playlist> findPage(int offset, int limit) {
+        String sql = "select id, title, description, cover_url, status, created_at "
+                + "from playlists order by id desc limit ? offset ?";
+        List<Playlist> result = new ArrayList<>();
+        try (Connection conn = DbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoException("分页查询歌单失败", e);
+        }
+        return result;
+    }
+
+    /** 歌单总数（分页用） */
+    public long countAll() {
+        String sql = "select count(*) from playlists";
+        try (Connection conn = DbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getLong(1) : 0L;
+        } catch (SQLException e) {
+            throw new DaoException("统计歌单总数失败", e);
+        }
+    }
+
     /** 标题查重：Service 的业务校验要用，返回同名记录数 */
     public long countByTitle(String title) {
         String sql = "select count(*) from playlists where title = ?";

@@ -31,6 +31,8 @@
              border-radius: 14px; font-size: 14px; border: 1px solid rgba(124,227,171,.28);
              background: var(--acc-dim); color: var(--acc); }
     .alert.err { border-color: rgba(255,143,164,.32); background: rgba(255,143,164,.1); color: var(--rose); }
+    .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 30px; }
+    .pager-info { font-size: 13px; color: var(--txt3); }
   </style>
 </head>
 <body>
@@ -110,6 +112,18 @@
       </c:otherwise>
     </c:choose>
   </div>
+
+  <c:if test="${empty frontMode and totalPages > 1}">
+    <div class="pager">
+      <c:if test="${page > 1}">
+        <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/playlist?page=${page - 1}">上一页</a>
+      </c:if>
+      <span class="pager-info num">第 ${page} / ${totalPages} 页</span>
+      <c:if test="${page < totalPages}">
+        <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/playlist?page=${page + 1}">下一页</a>
+      </c:if>
+    </div>
+  </c:if>
 </main>
 
 </body>

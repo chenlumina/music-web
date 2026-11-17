@@ -48,9 +48,18 @@ public class PlaylistServlet extends HttpServlet {
             return;
         }
 
-        List<Playlist> playlists = playlistService.listAll();
+        int page = parsePage(req.getParameter("page"));
+        int size = 6;
+        long total = playlistService.countAll();
+        int totalPages = (int) Math.max(1, (total + size - 1) / size);
+        if (page > totalPages) {
+            page = totalPages;
+        }
+        List<Playlist> playlists = playlistService.listPage(page, size);
         req.setAttribute("playlists", playlists);
-        req.setAttribute("total", playlists.size());
+        req.setAttribute("total", total);
+        req.setAttribute("page", page);
+        req.setAttribute("totalPages", totalPages);
         req.getRequestDispatcher("/WEB-INF/views/playlist/list.jsp").forward(req, resp);
     }
 
@@ -105,6 +114,14 @@ public class PlaylistServlet extends HttpServlet {
             return Long.parseLong(raw);
         } catch (NumberFormatException e) {
             return -1;
+        }
+    }
+
+    private int parsePage(String raw) {
+        try {
+            return Math.max(Integer.parseInt(raw), 1);
+        } catch (NumberFormatException e) {
+            return 1;
         }
     }
 }
