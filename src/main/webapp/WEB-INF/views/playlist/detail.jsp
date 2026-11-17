@@ -21,6 +21,13 @@
     .dmeta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--txt3); font-size: 12.5px; }
     .dactions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
     .dtags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .dtracks { display: flex; flex-direction: column; gap: 4px; }
+    .dtracks-title { font-size: 13px; color: var(--txt3); margin-bottom: 2px; }
+    .dtrack { display: flex; align-items: center; gap: 12px; font-size: 13.5px; border-bottom: 1px solid var(--line); padding: 6px 0; }
+    .dtrack .idx { color: var(--txt3); width: 22px; }
+    .dtrack .tname { color: var(--txt); flex: 1; }
+    .dtrack .tartist { color: var(--txt3); font-size: 12.5px; }
+    .dtrack .tdur { color: var(--txt3); }
     @media (max-width: 760px) { .dcard { grid-template-columns: 1fr; } .dcover { min-height: 210px; } }
   </style>
 </head>
@@ -69,6 +76,19 @@
       <c:if test="${not empty playlistTags}">
         <div class="dtags">
           <c:forEach items="${playlistTags}" var="t"><span class="badge">#<c:out value="${t.name}"/></span></c:forEach>
+        </div>
+      </c:if>
+      <c:if test="${not empty playlistTracks}">
+        <div class="dtracks">
+          <div class="dtracks-title">曲目（${playlistTracks.size()}）</div>
+          <c:forEach items="${playlistTracks}" var="tr" varStatus="st">
+            <div class="dtrack">
+              <span class="idx num">${st.index + 1}</span>
+              <span class="tname"><c:out value="${tr.title}"/></span>
+              <span class="tartist"><c:out value="${tr.artist}"/></span>
+              <span class="num tdur">${tr.durationText}</span>
+            </div>
+          </c:forEach>
         </div>
       </c:if>
       <div class="dactions">

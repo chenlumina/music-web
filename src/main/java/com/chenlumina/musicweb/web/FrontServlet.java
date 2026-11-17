@@ -4,6 +4,7 @@ import com.chenlumina.musicweb.entity.Playlist;
 import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
 import com.chenlumina.musicweb.service.TagService;
+import com.chenlumina.musicweb.service.TrackService;
 import com.chenlumina.musicweb.util.Sessions;
 
 import javax.servlet.ServletException;
@@ -23,6 +24,7 @@ public class FrontServlet extends HttpServlet {
     private final PlaylistService playlistService = new PlaylistService();
     private final FavoriteService favoriteService = new FavoriteService();
     private final TagService tagService = new TagService();
+    private final TrackService trackService = new TrackService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -38,6 +40,7 @@ public class FrontServlet extends HttpServlet {
             req.setAttribute("playlist", playlist);
             req.setAttribute("favorited", favoriteService.isFavorited(userId, id));
             req.setAttribute("playlistTags", tagService.tagsOf(id));
+            req.setAttribute("playlistTracks", trackService.list(id));
             req.setAttribute("frontMode", Boolean.TRUE);
             req.getRequestDispatcher("/WEB-INF/views/playlist/detail.jsp").forward(req, resp);
             return;

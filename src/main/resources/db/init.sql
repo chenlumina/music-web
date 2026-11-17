@@ -52,3 +52,14 @@ CREATE TABLE IF NOT EXISTS playlist_tag (
 
 INSERT IGNORE INTO tags (name, sort_order) VALUES
   ('雨声',1),('溪流',2),('鸟鸣',3),('森林',4),('海浪',5),('篝火',6),('白噪音',7),('夜晚',8);
+
+CREATE TABLE IF NOT EXISTS tracks (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
+  playlist_id BIGINT NOT NULL COMMENT '所属歌单',
+  title VARCHAR(200) NOT NULL COMMENT '曲名',
+  artist VARCHAR(100) NOT NULL DEFAULT '' COMMENT '艺术家',
+  duration_sec INT NOT NULL DEFAULT 0 COMMENT '时长（秒）',
+  sort_order INT NOT NULL DEFAULT 0 COMMENT '排序',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  KEY idx_track_playlist (playlist_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='曲目';

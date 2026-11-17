@@ -106,6 +106,32 @@
         <a class="btn btn-ghost" href="${pageContext.request.contextPath}/playlist">取消</a>
       </div>
     </form>
+
+    <form method="post" action="${pageContext.request.contextPath}/track" style="margin-top:26px;border-top:1px solid var(--line);padding-top:20px">
+      <input type="hidden" name="playlistId" value="${playlist.id}">
+      <div class="field">
+        <label>曲目管理（${empty tracks ? 0 : tracks.size()} 条）</label>
+        <div style="display:grid;gap:8px">
+          <c:forEach items="${tracks}" var="tr">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px">
+              <span><c:out value="${tr.title}"/> <span style="color:var(--txt3)">· <c:out value="${tr.artist}"/> · ${tr.durationText}</span></span>
+              <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/track?action=delete&id=${tr.id}&playlistId=${playlist.id}">删除</a>
+            </div>
+          </c:forEach>
+          <c:if test="${empty tracks}"><p class="hint" style="margin:0">还没有曲目，用下方表单添加</p></c:if>
+        </div>
+      </div>
+      <div class="field">
+        <label>添加曲目</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input name="trackTitle" placeholder="曲名" maxlength="200" required style="flex:2;min-width:160px">
+          <input name="trackArtist" placeholder="艺术家" maxlength="100" style="flex:1;min-width:120px">
+          <input name="trackDuration" type="number" min="0" placeholder="秒" style="width:90px">
+          <button class="btn btn-primary btn-sm" type="submit">添加</button>
+        </div>
+        <p class="hint">时长填秒数，例如 185 显示为 3:05</p>
+      </div>
+    </form>
   </div>
 </main>
 
