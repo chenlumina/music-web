@@ -96,7 +96,7 @@
         <article class="pl-card">
           <div class="pl-cover">
             <c:if test="${not empty p.coverUrl}">
-              <img src="${pageContext.request.contextPath}/assets/img/${p.coverUrl}" alt="<c:out value='${p.title}'/>">
+              <img src="${pageContext.request.contextPath}${p.coverPath}" alt="<c:out value='${p.title}'/>">
             </c:if>
             <span class="badge">推荐</span>
           </div>
@@ -132,7 +132,7 @@
           <article class="pl-card">
             <div class="pl-cover">
               <c:if test="${not empty p.coverUrl}">
-                <img src="${pageContext.request.contextPath}/assets/img/${p.coverUrl}" alt="<c:out value='${p.title}'/>">
+                <img src="${pageContext.request.contextPath}${p.coverPath}" alt="<c:out value='${p.title}'/>">
               </c:if>
               <span class="badge ${p.online ? '' : 'off'}">${p.online ? '上架中' : '已下架'}</span>
             </div>

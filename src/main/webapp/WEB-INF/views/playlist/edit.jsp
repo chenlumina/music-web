@@ -58,7 +58,7 @@
       </div>
     </c:if>
 
-    <form method="post" action="${pageContext.request.contextPath}/playlist">
+    <form method="post" action="${pageContext.request.contextPath}/playlist" enctype="multipart/form-data">
       <input type="hidden" name="action" value="update">
       <input type="hidden" name="id" value="${playlist.id}">
       <div class="field">
@@ -78,7 +78,8 @@
         <label for="coverUrl">封面文件名</label>
         <input id="coverUrl" name="coverUrl" type="text" maxlength="255"
                value="<c:out value='${playlist.coverUrl}'/>">
-        <p class="hint">使用 assets/img 下已有图片</p>
+        <input type="file" name="coverFile" accept="image/jpeg,image/png,image/gif,image/webp" style="margin-top:8px;font-size:13px;color:var(--txt3)">
+        <p class="hint">可上传新图（≤5MB）替换封面；或填写 assets/img 下已有文件名</p>
       </div>
 
       <div class="field">

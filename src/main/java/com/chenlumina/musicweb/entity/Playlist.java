@@ -81,6 +81,14 @@ public class Playlist {
         this.favoriteCount = favoriteCount;
     }
 
+    /** 封面路径：上传文件（up- 前缀）走 /covers/*，静态图片走 /assets/img */
+    public String getCoverPath() {
+        if (coverUrl == null || coverUrl.isEmpty()) {
+            return "";
+        }
+        return coverUrl.startsWith("up-") ? "/covers/" + coverUrl : "/assets/img/" + coverUrl;
+    }
+
     /** 供 JSTL fmt:formatDate 使用：LocalDateTime 转 java.util.Date */
     public Date getCreatedAtDate() {
         return createdAt == null ? null

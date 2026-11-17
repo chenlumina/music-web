@@ -7,13 +7,16 @@ import com.chenlumina.musicweb.service.RecommendService;
 import com.chenlumina.musicweb.service.TagService;
 import com.chenlumina.musicweb.service.TrackService;
 import com.chenlumina.musicweb.util.Sessions;
+import com.chenlumina.musicweb.util.UploadStore;
 import com.chenlumina.musicweb.util.ValidateException;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +33,7 @@ import java.util.List;
  * JSP 移入 /WEB-INF/views 后只能经转发到达，直接访问 URL 会被容器拒绝。
  */
 @WebServlet(name = "playlistServlet", urlPatterns = "/playlist")
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024, maxRequestSize = 6 * 1024 * 1024)
 public class PlaylistServlet extends HttpServlet {
 
     private final PlaylistService playlistService = new PlaylistService();
@@ -110,6 +114,10 @@ public class PlaylistServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
+            String uploaded = saveUploadedCover(req);
+            if (uploaded != null) {
+                coverUrl = uploaded;
+            }
             try {
                 playlistService.update(id, title, description, coverUrl, status);
                 tagService.assign(id, toIds(req.getParameterValues("tagIds")));
@@ -128,6 +136,10 @@ public class PlaylistServlet extends HttpServlet {
             return;
         }
 
+        String uploaded = saveUploadedCover(req);
+        if (uploaded != null) {
+            coverUrl = uploaded;
+        }
         try {
             long id = playlistService.create(title, description, coverUrl, status);
             tagService.assign(id, toIds(req.getParameterValues("tagIds")));
@@ -145,6 +157,27 @@ public class PlaylistServlet extends HttpServlet {
             req.setAttribute("selectedTagIds", toIds(req.getParameterValues("tagIds")));
             req.getRequestDispatcher("/WEB-INF/views/playlist/form.jsp").forward(req, resp);
         }
+    }
+
+    /** multipart 表单若带 coverFile 且扩展名合法，则保存并返回文件名；否则返回 null */
+    private String saveUploadedCover(HttpServletRequest req) throws IOException, ServletException {
+        String contentType = req.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("multipart/")) {
+            return null;
+        }
+        Part part = req.getPart("coverFile");
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+        String submitted = part.getSubmittedFileName();
+        String ext = "";
+        if (submitted != null && submitted.lastIndexOf('.') >= 0) {
+            ext = submitted.substring(submitted.lastIndexOf('.') + 1).toLowerCase();
+        }
+        if (!ext.matches("jpg|jpeg|png|gif|webp")) {
+            return null;
+        }
+        return UploadStore.save(part, ext);
     }
 
     private List<Long> toIds(String[] raw) {

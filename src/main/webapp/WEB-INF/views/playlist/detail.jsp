@@ -61,7 +61,7 @@
   <div class="dcard">
     <div class="dcover">
       <c:if test="${not empty playlist.coverUrl}">
-        <img src="${pageContext.request.contextPath}/assets/img/${playlist.coverUrl}" alt="<c:out value='${playlist.title}'/>">
+        <img src="${pageContext.request.contextPath}${playlist.coverPath}" alt="<c:out value='${playlist.title}'/>">
       </c:if>
     </div>
     <div class="dinfo">
