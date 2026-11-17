@@ -3,6 +3,7 @@ package com.chenlumina.musicweb.web;
 import com.chenlumina.musicweb.entity.Playlist;
 import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
+import com.chenlumina.musicweb.service.TagService;
 import com.chenlumina.musicweb.util.Sessions;
 import com.chenlumina.musicweb.util.ValidateException;
 
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,11 +32,13 @@ public class PlaylistServlet extends HttpServlet {
 
     private final PlaylistService playlistService = new PlaylistService();
     private final FavoriteService favoriteService = new FavoriteService();
+    private final TagService tagService = new TagService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         if ("new".equals(req.getParameter("action"))) {
+            req.setAttribute("allTags", tagService.listAll());
             req.getRequestDispatcher("/WEB-INF/views/playlist/form.jsp").forward(req, resp);
             return;
         }
@@ -47,6 +51,8 @@ public class PlaylistServlet extends HttpServlet {
                 return;
             }
             req.setAttribute("playlist", playlist);
+            req.setAttribute("allTags", tagService.listAll());
+            req.setAttribute("selectedTagIds", tagService.idsOf(id));
             req.getRequestDispatcher("/WEB-INF/views/playlist/edit.jsp").forward(req, resp);
             return;
         }
@@ -61,6 +67,7 @@ public class PlaylistServlet extends HttpServlet {
             req.setAttribute("playlist", playlist);
             req.setAttribute("favorited",
                     favoriteService.isFavorited(Sessions.currentUserId(req), id));
+            req.setAttribute("playlistTags", tagService.tagsOf(id));
             req.setAttribute("adminMode", Boolean.TRUE);
             req.getRequestDispatcher("/WEB-INF/views/playlist/detail.jsp").forward(req, resp);
             return;
@@ -98,6 +105,7 @@ public class PlaylistServlet extends HttpServlet {
             }
             try {
                 playlistService.update(id, title, description, coverUrl, status);
+                tagService.assign(id, toIds(req.getParameterValues("tagIds")));
                 String msg = URLEncoder.encode("歌单「" + title.trim() + "」更新成功",
                         StandardCharsets.UTF_8.name());
                 resp.sendRedirect(req.getContextPath() + "/playlist?msg=" + msg);
@@ -106,6 +114,8 @@ public class PlaylistServlet extends HttpServlet {
                 Playlist echo = new Playlist(title, description, coverUrl, status);
                 echo.setId(id);
                 req.setAttribute("playlist", echo);
+                req.setAttribute("allTags", tagService.listAll());
+                req.setAttribute("selectedTagIds", toIds(req.getParameterValues("tagIds")));
                 req.getRequestDispatcher("/WEB-INF/views/playlist/edit.jsp").forward(req, resp);
             }
             return;
@@ -113,6 +123,7 @@ public class PlaylistServlet extends HttpServlet {
 
         try {
             long id = playlistService.create(title, description, coverUrl, status);
+            tagService.assign(id, toIds(req.getParameterValues("tagIds")));
             String msg = URLEncoder.encode("歌单「" + title.trim() + "」创建成功，编号 " + id,
                     StandardCharsets.UTF_8.name());
             resp.sendRedirect(req.getContextPath() + "/playlist?msg=" + msg);
@@ -123,8 +134,24 @@ public class PlaylistServlet extends HttpServlet {
             req.setAttribute("formDescription", description);
             req.setAttribute("formCoverUrl", coverUrl);
             req.setAttribute("formStatus", status);
+            req.setAttribute("allTags", tagService.listAll());
+            req.setAttribute("selectedTagIds", toIds(req.getParameterValues("tagIds")));
             req.getRequestDispatcher("/WEB-INF/views/playlist/form.jsp").forward(req, resp);
         }
+    }
+
+    private List<Long> toIds(String[] raw) {
+        List<Long> ids = new ArrayList<>();
+        if (raw != null) {
+            for (String s : raw) {
+                try {
+                    ids.add(Long.parseLong(s));
+                } catch (NumberFormatException ignored) {
+                    // 非数字标签值直接忽略
+                }
+            }
+        }
+        return ids;
     }
 
     private long parseId(String raw) {

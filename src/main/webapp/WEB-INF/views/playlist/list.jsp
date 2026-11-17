@@ -33,6 +33,10 @@
     .alert.err { border-color: rgba(255,143,164,.32); background: rgba(255,143,164,.1); color: var(--rose); }
     .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 30px; }
     .pager-info { font-size: 13px; color: var(--txt3); }
+    .tagbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .tagbar .tag { font-size: 12.5px; color: var(--txt3); padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; }
+    .tagbar .tag:hover { color: var(--txt); border-color: var(--line-strong); }
+    .tagbar .tag.on { color: var(--acc); border-color: rgba(124,227,171,.4); background: var(--acc-dim); }
   </style>
 </head>
 <body>
@@ -67,6 +71,15 @@
     <div class="alert">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       <c:out value="${param.msg}"/>
+    </div>
+  </c:if>
+
+  <c:if test="${frontMode}">
+    <div class="tagbar">
+      <a class="tag ${empty activeTag ? 'on' : ''}" href="${pageContext.request.contextPath}/front">全部</a>
+      <c:forEach items="${allTags}" var="t">
+        <a class="tag ${activeTag eq t.id ? 'on' : ''}" href="${pageContext.request.contextPath}/front?tag=${t.id}"><c:out value="${t.name}"/></a>
+      </c:forEach>
     </div>
   </c:if>
 

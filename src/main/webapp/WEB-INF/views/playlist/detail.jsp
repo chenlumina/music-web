@@ -20,6 +20,7 @@
     .ddesc { margin: 0; color: var(--txt2); line-height: 1.9; white-space: pre-wrap; }
     .dmeta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--txt3); font-size: 12.5px; }
     .dactions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .dtags { display: flex; gap: 8px; flex-wrap: wrap; }
     @media (max-width: 760px) { .dcard { grid-template-columns: 1fr; } .dcover { min-height: 210px; } }
   </style>
 </head>
@@ -65,6 +66,11 @@
         <span>♥ ${empty playlist.favoriteCount ? 0 : playlist.favoriteCount} 人收藏</span>
         <span class="num"><fmt:formatDate value="${playlist.createdAtDate}" pattern="yyyy-MM-dd HH:mm"/></span>
       </div>
+      <c:if test="${not empty playlistTags}">
+        <div class="dtags">
+          <c:forEach items="${playlistTags}" var="t"><span class="badge">#<c:out value="${t.name}"/></span></c:forEach>
+        </div>
+      </c:if>
       <div class="dactions">
         <c:choose>
           <c:when test="${not empty sessionScope.userId}">

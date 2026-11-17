@@ -3,6 +3,7 @@ package com.chenlumina.musicweb.web;
 import com.chenlumina.musicweb.entity.Playlist;
 import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
+import com.chenlumina.musicweb.service.TagService;
 import com.chenlumina.musicweb.util.Sessions;
 
 import javax.servlet.ServletException;
@@ -21,6 +22,7 @@ public class FrontServlet extends HttpServlet {
 
     private final PlaylistService playlistService = new PlaylistService();
     private final FavoriteService favoriteService = new FavoriteService();
+    private final TagService tagService = new TagService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -35,14 +37,20 @@ public class FrontServlet extends HttpServlet {
             Long userId = Sessions.currentUserId(req);
             req.setAttribute("playlist", playlist);
             req.setAttribute("favorited", favoriteService.isFavorited(userId, id));
+            req.setAttribute("playlistTags", tagService.tagsOf(id));
             req.setAttribute("frontMode", Boolean.TRUE);
             req.getRequestDispatcher("/WEB-INF/views/playlist/detail.jsp").forward(req, resp);
             return;
         }
 
-        List<Playlist> playlists = playlistService.listOnline();
+        long tagId = parseId(req.getParameter("tag"));
+        List<Playlist> playlists = tagId > 0
+                ? tagService.listOnlineByTag(tagId)
+                : playlistService.listOnline();
         req.setAttribute("playlists", playlists);
         req.setAttribute("total", playlists.size());
+        req.setAttribute("allTags", tagService.listAll());
+        req.setAttribute("activeTag", tagId > 0 ? tagId : null);
         req.setAttribute("frontMode", Boolean.TRUE);
         req.getRequestDispatcher("/WEB-INF/views/playlist/list.jsp").forward(req, resp);
     }

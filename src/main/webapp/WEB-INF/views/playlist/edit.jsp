@@ -82,6 +82,18 @@
       </div>
 
       <div class="field">
+        <label>标签（可多选）</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <c:forEach items="${allTags}" var="t">
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--txt2);padding:6px 10px;border:1px solid var(--line);border-radius:999px">
+              <input type="checkbox" name="tagIds" value="${t.id}" ${not empty selectedTagIds and selectedTagIds.contains(t.id) ? 'checked' : ''}> <c:out value="${t.name}"/>
+            </label>
+          </c:forEach>
+        </div>
+        <p class="hint">用于前台按标签筛选</p>
+      </div>
+
+      <div class="field">
         <label for="status">上架状态</label>
         <select id="status" name="status">
           <option value="ONLINE" ${playlist.status ne 'OFFLINE' ? 'selected' : ''}>上架（ONLINE）</option>
