@@ -1,7 +1,9 @@
 package com.chenlumina.musicweb.web;
 
 import com.chenlumina.musicweb.entity.Playlist;
+import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
+import com.chenlumina.musicweb.util.Sessions;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,21 +14,44 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * 实验五前台只读入口：真实业务规则——仅 ONLINE 歌单可见，无需登录。
- * 与后台 /playlist（全量、需登录）区分；下架操作生效后前台立即不可见。
+ * 前台只读入口：列表仅展示上架歌单；详情仅可查看上架歌单，无需登录。
  */
 @WebServlet(name = "frontServlet", urlPatterns = "/front")
 public class FrontServlet extends HttpServlet {
 
     private final PlaylistService playlistService = new PlaylistService();
+    private final FavoriteService favoriteService = new FavoriteService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        if ("detail".equals(req.getParameter("action"))) {
+            long id = parseId(req.getParameter("id"));
+            Playlist playlist = playlistService.getById(id);
+            if (playlist == null || !playlist.isOnline()) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            Long userId = Sessions.currentUserId(req);
+            req.setAttribute("playlist", playlist);
+            req.setAttribute("favorited", favoriteService.isFavorited(userId, id));
+            req.setAttribute("frontMode", Boolean.TRUE);
+            req.getRequestDispatcher("/WEB-INF/views/playlist/detail.jsp").forward(req, resp);
+            return;
+        }
+
         List<Playlist> playlists = playlistService.listOnline();
         req.setAttribute("playlists", playlists);
         req.setAttribute("total", playlists.size());
         req.setAttribute("frontMode", Boolean.TRUE);
         req.getRequestDispatcher("/WEB-INF/views/playlist/list.jsp").forward(req, resp);
+    }
+
+    private long parseId(String raw) {
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }

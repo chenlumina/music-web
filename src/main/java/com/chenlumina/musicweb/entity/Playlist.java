@@ -13,6 +13,7 @@ public class Playlist {
     private String coverUrl;
     private String status;
     private LocalDateTime createdAt;
+    private int favoriteCount;
 
     public Playlist() {
     }
@@ -70,6 +71,14 @@ public class Playlist {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public int getFavoriteCount() {
+        return favoriteCount;
+    }
+
+    public void setFavoriteCount(int favoriteCount) {
+        this.favoriteCount = favoriteCount;
     }
 
     /** 供 JSTL fmt:formatDate 使用：LocalDateTime 转 java.util.Date */

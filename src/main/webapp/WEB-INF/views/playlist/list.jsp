@@ -49,6 +49,7 @@
       <c:choose>
         <c:when test="${not empty sessionScope.userId}">
           <div class="nav-user">
+            <a href="${pageContext.request.contextPath}/my-favorites">我的收藏</a>
             <span class="nav-name"><c:out value="${sessionScope.username}"/></span>
             <a href="${pageContext.request.contextPath}/logout">注销</a>
           </div>
@@ -97,13 +98,14 @@
               <span class="badge ${p.online ? '' : 'off'}">${p.online ? '上架中' : '已下架'}</span>
             </div>
             <div class="pl-body">
-              <h3><c:out value="${p.title}"/></h3>
+              <h3><a href="${pageContext.request.contextPath}/${frontMode ? 'front' : 'playlist'}?action=detail&id=${p.id}"><c:out value="${p.title}"/></a></h3>
               <p class="pl-desc"><c:out value="${empty p.description ? '暂无描述' : p.description}"/></p>
               <c:if test="${empty frontMode}">
                 <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/playlist?action=edit&id=${p.id}">编辑</a>
               </c:if>
               <div class="pl-foot">
                 <span>#${p.id}</span>
+                <span>♥ ${empty p.favoriteCount ? 0 : p.favoriteCount}</span>
                 <span class="num"><fmt:formatDate value="${p.createdAtDate}" pattern="yyyy-MM-dd HH:mm"/></span>
               </div>
             </div>

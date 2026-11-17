@@ -12,6 +12,7 @@ CREATE TABLE playlists (
   description VARCHAR(500) NOT NULL DEFAULT '' COMMENT '歌单描述',
   cover_url VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面文件名',
   status VARCHAR(20) NOT NULL DEFAULT 'ONLINE' COMMENT 'ONLINE=上架 OFFLINE=下架',
+  favorite_count INT NOT NULL DEFAULT 0 COMMENT '收藏数',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   CONSTRAINT uq_playlist_title UNIQUE (title),
   KEY idx_status (status)
@@ -25,3 +26,12 @@ INSERT INTO playlists (title, description, cover_url, status) VALUES
   ('海浪白噪音', '连续的海浪拍岸声，用于午休与冥想。', 'cover-waves.jpg', 'OFFLINE');
 
 SELECT id, title, status, created_at FROM playlists ORDER BY id;
+
+CREATE TABLE IF NOT EXISTS favorites (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
+  user_id BIGINT NOT NULL COMMENT '用户ID',
+  playlist_id BIGINT NOT NULL COMMENT '歌单ID',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '收藏时间',
+  CONSTRAINT uq_fav_user_playlist UNIQUE (user_id, playlist_id),
+  KEY idx_fav_playlist (playlist_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收藏';

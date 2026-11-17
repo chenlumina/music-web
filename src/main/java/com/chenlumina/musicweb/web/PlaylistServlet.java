@@ -1,7 +1,9 @@
 package com.chenlumina.musicweb.web;
 
 import com.chenlumina.musicweb.entity.Playlist;
+import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
+import com.chenlumina.musicweb.util.Sessions;
 import com.chenlumina.musicweb.util.ValidateException;
 
 import javax.servlet.ServletException;
@@ -27,6 +29,7 @@ import java.util.List;
 public class PlaylistServlet extends HttpServlet {
 
     private final PlaylistService playlistService = new PlaylistService();
+    private final FavoriteService favoriteService = new FavoriteService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -45,6 +48,21 @@ public class PlaylistServlet extends HttpServlet {
             }
             req.setAttribute("playlist", playlist);
             req.getRequestDispatcher("/WEB-INF/views/playlist/edit.jsp").forward(req, resp);
+            return;
+        }
+
+        if ("detail".equals(req.getParameter("action"))) {
+            long id = parseId(req.getParameter("id"));
+            Playlist playlist = playlistService.getById(id);
+            if (playlist == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            req.setAttribute("playlist", playlist);
+            req.setAttribute("favorited",
+                    favoriteService.isFavorited(Sessions.currentUserId(req), id));
+            req.setAttribute("adminMode", Boolean.TRUE);
+            req.getRequestDispatcher("/WEB-INF/views/playlist/detail.jsp").forward(req, resp);
             return;
         }
 

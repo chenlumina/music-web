@@ -20,7 +20,7 @@ public class PlaylistDao {
 
     /** 列表查询：按 id 倒序，最新的歌单排在最前 */
     public List<Playlist> findAll() {
-        String sql = "select id, title, description, cover_url, status, created_at "
+        String sql = "select id, title, description, cover_url, status, favorite_count, created_at "
                 + "from playlists order by id desc";
         List<Playlist> result = new ArrayList<>();
         try (Connection conn = DbUtil.getConnection();
@@ -37,7 +37,7 @@ public class PlaylistDao {
 
     /** 分页查询：admin 列表用，按 id 倒序 */
     public List<Playlist> findPage(int offset, int limit) {
-        String sql = "select id, title, description, cover_url, status, created_at "
+        String sql = "select id, title, description, cover_url, status, favorite_count, created_at "
                 + "from playlists order by id desc limit ? offset ?";
         List<Playlist> result = new ArrayList<>();
         try (Connection conn = DbUtil.getConnection();
@@ -101,7 +101,7 @@ public class PlaylistDao {
 
     /** 按主键查单条，编辑回显用；查不到返回 null */
     public Playlist findById(long id) {
-        String sql = "select id, title, description, cover_url, status, created_at "
+        String sql = "select id, title, description, cover_url, status, favorite_count, created_at "
                 + "from playlists where id = ?";
         try (Connection conn = DbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -148,7 +148,7 @@ public class PlaylistDao {
 
     /** 前台只读列表：真实业务规则——仅 ONLINE 可见 */
     public List<Playlist> findOnline() {
-        String sql = "select id, title, description, cover_url, status, created_at "
+        String sql = "select id, title, description, cover_url, status, favorite_count, created_at "
                 + "from playlists where status = 'ONLINE' order by id desc";
         List<Playlist> result = new ArrayList<>();
         try (Connection conn = DbUtil.getConnection();
@@ -171,6 +171,7 @@ public class PlaylistDao {
         playlist.setDescription(rs.getString("description"));
         playlist.setCoverUrl(rs.getString("cover_url"));
         playlist.setStatus(rs.getString("status"));
+        playlist.setFavoriteCount(rs.getInt("favorite_count"));
         playlist.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         return playlist;
     }
