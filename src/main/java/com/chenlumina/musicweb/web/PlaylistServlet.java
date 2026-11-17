@@ -3,6 +3,7 @@ package com.chenlumina.musicweb.web;
 import com.chenlumina.musicweb.entity.Playlist;
 import com.chenlumina.musicweb.service.FavoriteService;
 import com.chenlumina.musicweb.service.PlaylistService;
+import com.chenlumina.musicweb.service.RecommendService;
 import com.chenlumina.musicweb.service.TagService;
 import com.chenlumina.musicweb.service.TrackService;
 import com.chenlumina.musicweb.util.Sessions;
@@ -35,6 +36,7 @@ public class PlaylistServlet extends HttpServlet {
     private final FavoriteService favoriteService = new FavoriteService();
     private final TagService tagService = new TagService();
     private final TrackService trackService = new TrackService();
+    private final RecommendService recommendService = new RecommendService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -89,6 +91,7 @@ public class PlaylistServlet extends HttpServlet {
         req.setAttribute("total", total);
         req.setAttribute("page", page);
         req.setAttribute("totalPages", totalPages);
+        req.setAttribute("recommendedIds", recommendService.ids());
         req.getRequestDispatcher("/WEB-INF/views/playlist/list.jsp").forward(req, resp);
     }
 

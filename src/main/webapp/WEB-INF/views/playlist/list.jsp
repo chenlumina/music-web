@@ -50,6 +50,7 @@
     <div class="nav-links">
       <a href="${pageContext.request.contextPath}/hello">/hello</a>
       <a href="${pageContext.request.contextPath}/playlist">歌单列表</a>
+      <a href="${pageContext.request.contextPath}/recommend">编辑推荐</a>
       <c:choose>
         <c:when test="${not empty sessionScope.userId}">
           <div class="nav-user">
@@ -79,6 +80,31 @@
       <a class="tag ${empty activeTag ? 'on' : ''}" href="${pageContext.request.contextPath}/front">全部</a>
       <c:forEach items="${allTags}" var="t">
         <a class="tag ${activeTag eq t.id ? 'on' : ''}" href="${pageContext.request.contextPath}/front?tag=${t.id}"><c:out value="${t.name}"/></a>
+      </c:forEach>
+    </div>
+  </c:if>
+
+  <c:if test="${frontMode and not empty recommended}">
+    <div class="head" style="margin-bottom:16px">
+      <div>
+        <h1 style="font-size:20px">编辑推荐</h1>
+        <span class="sub">越靠前的更值得一听</span>
+      </div>
+    </div>
+    <div class="grid" style="margin-bottom:34px">
+      <c:forEach items="${recommended}" var="p">
+        <article class="pl-card">
+          <div class="pl-cover">
+            <c:if test="${not empty p.coverUrl}">
+              <img src="${pageContext.request.contextPath}/assets/img/${p.coverUrl}" alt="<c:out value='${p.title}'/>">
+            </c:if>
+            <span class="badge">推荐</span>
+          </div>
+          <div class="pl-body">
+            <h3><a href="${pageContext.request.contextPath}/front?action=detail&id=${p.id}"><c:out value="${p.title}"/></a></h3>
+            <p class="pl-desc"><c:out value="${empty p.description ? '暂无描述' : p.description}"/></p>
+          </div>
+        </article>
       </c:forEach>
     </div>
   </c:if>
@@ -115,6 +141,7 @@
               <p class="pl-desc"><c:out value="${empty p.description ? '暂无描述' : p.description}"/></p>
               <c:if test="${empty frontMode}">
                 <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/playlist?action=edit&id=${p.id}">编辑</a>
+                <a class="btn btn-ghost btn-sm" href="${pageContext.request.contextPath}/recommend?action=${not empty recommendedIds and recommendedIds.contains(p.id) ? 'remove' : 'add'}&playlistId=${p.id}">${not empty recommendedIds and recommendedIds.contains(p.id) ? '取消推荐' : '推荐'}</a>
               </c:if>
               <div class="pl-foot">
                 <span>#${p.id}</span>
