@@ -1,4 +1,4 @@
-package com.chenlumina.musiclab.util;
+package com.chenlumina.musicweb.util;
 
 import java.io.IOException;
 import java.io.InputStream;

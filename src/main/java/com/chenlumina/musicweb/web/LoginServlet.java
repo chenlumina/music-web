@@ -1,8 +1,8 @@
-package com.chenlumina.musiclab.web;
+package com.chenlumina.musicweb.web;
 
-import com.chenlumina.musiclab.entity.User;
-import com.chenlumina.musiclab.service.AuthService;
-import com.chenlumina.musiclab.util.ValidateException;
+import com.chenlumina.musicweb.entity.User;
+import com.chenlumina.musicweb.service.AuthService;
+import com.chenlumina.musicweb.util.ValidateException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

@@ -1,7 +1,7 @@
-package com.chenlumina.musiclab.web;
+package com.chenlumina.musicweb.web;
 
-import com.chenlumina.musiclab.entity.Playlist;
-import com.chenlumina.musiclab.service.PlaylistService;
+import com.chenlumina.musicweb.entity.Playlist;
+import com.chenlumina.musicweb.service.PlaylistService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

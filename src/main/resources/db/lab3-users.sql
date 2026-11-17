@@ -1,6 +1,6 @@
 -- 实验三：用户表与种子账号（沿用 music-web 的 users 结构与 BCrypt 存储规则）
 SET NAMES utf8mb4;
-USE music_lab;
+USE music_web;
 
 DROP TABLE IF EXISTS users;
 

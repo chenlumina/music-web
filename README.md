@@ -1,4 +1,4 @@
-# music-lab · 自然音乐网站（JavaEE8 课程实现）
+# music-web · 自然音乐网站（JavaEE8 课程实现）
 
 《Java EE 企业级开发》课程个人项目「自然音乐网站」的 JavaEE8 合规实现载体。
 业务模型与界面规范沿用只读参考项目 music-web；因课程基线禁止 JakartaEE，
@@ -20,7 +20,7 @@
 1. 初始化数据库：`mysql -u root < src/main/resources/db/init.sql` 与 `db/lab3-users.sql`
 2. 配置 `src/main/resources/db.properties`（url/username/password）
 3. 构建：`mvn clean package`（JDK11）
-4. 部署：将 `target/music-lab.war` 放入 Tomcat9 `webapps/`，启动后访问 `http://localhost:8080/music-lab/`
+4. 部署：将 `target/music-web.war` 放入 Tomcat9 `webapps/`，启动后访问 `http://localhost:8080/music-web/`
 5. 演示账号：admin/admin123（ADMIN）、test01/test123（USER）
 
 ## 部署

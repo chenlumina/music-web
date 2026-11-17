@@ -1,4 +1,4 @@
-package com.chenlumina.musiclab.web;
+package com.chenlumina.musicweb.web;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

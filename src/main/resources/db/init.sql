@@ -1,8 +1,8 @@
--- music-lab 数据库初始化脚本
+-- music-web 数据库初始化脚本
 -- 对应实验二：歌单列表查询 + 新增
 SET NAMES utf8mb4;
-CREATE DATABASE IF NOT EXISTS music_lab DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE music_lab;
+CREATE DATABASE IF NOT EXISTS music_web DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE music_web;
 
 DROP TABLE IF EXISTS playlists;
 

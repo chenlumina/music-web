@@ -1,4 +1,4 @@
-package com.chenlumina.musiclab.web;
+package com.chenlumina.musicweb.web;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

@@ -1,8 +1,8 @@
-package com.chenlumina.musiclab.entity;
+package com.chenlumina.musicweb.entity;
 
 import java.time.LocalDateTime;
 
-/** 用户：对应 music_lab.users，字段与 music-web 的 User 实体保持一致 */
+/** 用户：对应 music_web.users，字段与 music-web 的 User 实体保持一致 */
 public class User {
 
     private long id;

@@ -5,7 +5,7 @@ FROM tomcat:9-jdk11
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # 部署本工程 WAR（先 mvn clean package 产出）
-COPY target/music-lab.war /usr/local/tomcat/webapps/music-lab.war
+COPY target/music-web.war /usr/local/tomcat/webapps/music-web.war
 
 # 数据库连接通过环境变量外置（DbUtil 优先读 DB_URL/DB_USERNAME/DB_PASSWORD）
 ENV DB_URL="" DB_USERNAME="" DB_PASSWORD=""

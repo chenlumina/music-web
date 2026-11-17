@@ -1,4 +1,4 @@
-package com.chenlumina.musiclab.entity;
+package com.chenlumina.musicweb.entity;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

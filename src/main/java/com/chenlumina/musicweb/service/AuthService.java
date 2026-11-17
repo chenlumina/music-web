@@ -1,8 +1,8 @@
-package com.chenlumina.musiclab.service;
+package com.chenlumina.musicweb.service;
 
-import com.chenlumina.musiclab.dao.UserDao;
-import com.chenlumina.musiclab.entity.User;
-import com.chenlumina.musiclab.util.ValidateException;
+import com.chenlumina.musicweb.dao.UserDao;
+import com.chenlumina.musicweb.entity.User;
+import com.chenlumina.musicweb.util.ValidateException;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**

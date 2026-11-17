@@ -1,8 +1,8 @@
-package com.chenlumina.musiclab.dao;
+package com.chenlumina.musicweb.dao;
 
-import com.chenlumina.musiclab.entity.User;
-import com.chenlumina.musiclab.util.DaoException;
-import com.chenlumina.musiclab.util.DbUtil;
+import com.chenlumina.musicweb.entity.User;
+import com.chenlumina.musicweb.util.DaoException;
+import com.chenlumina.musicweb.util.DbUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

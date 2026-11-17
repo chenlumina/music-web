@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 实验七部署后验证脚本：探活 + 登录页可达，全通过返回 0
-# 用法：bash verify-deploy.sh [BASE]，默认 http://localhost:8080/music-lab
-BASE=${1:-http://localhost:8080/music-lab}
+# 用法：bash verify-deploy.sh [BASE]，默认 http://localhost:8080/music-web
+BASE=${1:-http://localhost:8080/music-web}
 fail=0
 check() {
   local name=$1 url=$2 expect=$3

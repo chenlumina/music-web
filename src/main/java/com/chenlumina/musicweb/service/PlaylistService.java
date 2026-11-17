@@ -1,8 +1,8 @@
-package com.chenlumina.musiclab.service;
+package com.chenlumina.musicweb.service;
 
-import com.chenlumina.musiclab.dao.PlaylistDao;
-import com.chenlumina.musiclab.entity.Playlist;
-import com.chenlumina.musiclab.util.ValidateException;
+import com.chenlumina.musicweb.dao.PlaylistDao;
+import com.chenlumina.musicweb.entity.Playlist;
+import com.chenlumina.musicweb.util.ValidateException;
 
 import java.util.List;
 import java.util.Set;

@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.chenlumina</groupId>
-  <artifactId>music-lab</artifactId>
+  <artifactId>music-web</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>music-lab</name>
+  <name>music-web</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,7 +53,7 @@
   </dependencies>
 
   <build>
-    <finalName>music-lab</finalName>
+    <finalName>music-web</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

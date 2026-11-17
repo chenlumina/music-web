@@ -1,4 +1,4 @@
-package com.chenlumina.musiclab.web;
+package com.chenlumina.musicweb.web;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -56,7 +56,7 @@ public class HelloServlet extends HttpServlet {
             out.println("<p class=\"badge\">Servlet 生命周期演示</p>");
             out.println("<h1 style=\"margin:18px 0 10px;font-size:30px;font-weight:600\">你好，" + who + "</h1>");
             out.println("<p style=\"color:var(--txt2);line-height:1.9;margin:0 0 22px\">"
-                    + "这里是 music-lab 的第一个 Servlet，由 Tomcat9 容器创建、调用与销毁。</p>");
+                    + "这里是 music-web 的第一个 Servlet，由 Tomcat9 容器创建、调用与销毁。</p>");
             out.println("<div style=\"display:grid;gap:12px;font-size:14px\">");
             out.println("<div style=\"display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:10px\">"
                     + "<span style=\"color:var(--txt3)\">当前服务器时间</span><span class=\"num\">" + serverTime + "</span></div>");
