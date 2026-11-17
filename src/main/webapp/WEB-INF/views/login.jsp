@@ -80,7 +80,7 @@
         <c:if test="${not empty param.msg}"><p class="msg ok"><c:out value="${param.msg}"/></p></c:if>
       </form>
 
-      <div class="hint">演示账号：<b>admin / admin123</b>（管理员）· <b>test01 / test123</b>（普通用户）</div>
+      <div class="hint">演示账号：<b>admin / admin123</b>（管理员）· <b>test01 / test123</b>（普通用户）<br>没有账号？<a href="${pageContext.request.contextPath}/register">立即注册</a></div>
     </div>
   </section>
 </main>
