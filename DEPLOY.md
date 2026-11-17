@@ -46,6 +46,8 @@ docker compose up -d --build
 - 后台列表（需登录）：/music-lab/playlist ；新增 /playlist?action=new ；编辑 /playlist?action=edit&id=N
 - 前台只读（无需登录，仅上架）：/music-lab/front
 - 健康检查：`curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/music-lab/login` 期望 200。
+- 部署后一键验证：`bash verify-deploy.sh http://localhost:8080/music-lab`（health/login/front 全 200 输出 DEPLOY OK）。
+- 健康检查端点：`/music-lab/health` 返回 200 `OK db=up` 表示应用与数据库均可用；503 `FAIL db=down` 表示数据库不可达。
 - 异机访问：将 localhost 换为部署主机 IP/域名（容器/云需开放 8080 安全组）；从另一台电脑或手机打开同一 URL。
 
 ## 5. 常见问题
@@ -55,6 +57,10 @@ docker compose up -d --build
 - 中文乱码：确认 EncodingFilter 生效、数据库与连接串 utf8mb4；POST 体以 UTF-8 提交。
 - JSTL 不解析：标签库 URI 必须为 http://java.sun.com/jsp/jstl/core（JSTL1.2），不要用 jakarta.tags.core。
 - 出现 jakarta.* 报错：本工程为 JavaEE8/javax，若引入 jakarta 依赖请改回 javax.servlet-api(provided)。
+- Tomcat 版本不对：Tomcat10+ 使用 jakarta 命名空间，本 WAR 基于 javax，必须用 Tomcat9。
+- 健康检查 503 db=down：先确认 MySQL 8 在 3306 监听、DB_URL 可达，再看应用日志的 SQLException 原因链。
+- 部署后白屏/500：查 logs/localhost.*.log 的异常栈首行，按 DaoException 包装的 cause 定位到具体 SQL 或连接。
+- 上下文路径带错：WAR 名决定上下文，访问必须以 /music-lab 开头；改名后需同步 DEPLOY.md 与验证脚本。
 
 ## 6. 当前验证状态（如实）
 - 已验证：本地独立 Tomcat（非 IDE）构建/初始化/启动/闭环回归/截图。
