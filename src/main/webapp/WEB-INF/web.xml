@@ -23,6 +23,10 @@
     <filter-name>authFilter</filter-name>
     <filter-class>com.chenlumina.musicweb.web.AuthFilter</filter-class>
   </filter>
+  <filter>
+    <filter-name>adminAuthFilter</filter-name>
+    <filter-class>com.chenlumina.musicweb.web.AdminAuthFilter</filter-class>
+  </filter>
   <filter-mapping>
     <filter-name>encodingFilter</filter-name>
     <url-pattern>/*</url-pattern>
@@ -32,10 +36,19 @@
     <url-pattern>/playlist</url-pattern>
     <url-pattern>/playlist/*</url-pattern>
   </filter-mapping>
+  <filter-mapping>
+    <filter-name>adminAuthFilter</filter-name>
+    <url-pattern>/admin</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+  </filter-mapping>
 
   <!-- 统一异常兜底：404/500 与未捕获异常（含 DaoException）都进同一张错误页 -->
   <error-page>
     <error-code>404</error-code>
+    <location>/WEB-INF/views/error.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>403</error-code>
     <location>/WEB-INF/views/error.jsp</location>
   </error-page>
   <error-page>

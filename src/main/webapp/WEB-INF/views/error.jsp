@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="code" value="${empty requestScope['javax.servlet.error.status_code'] ? 500 : requestScope['javax.servlet.error.status_code']}"/>
-<c:set var="msg" value="${code == 404 ? '页面不存在，或已移入 WEB-INF 保护目录' : '系统繁忙，请稍后重试'}"/>
+<c:set var="msg" value="${code == 404 ? '页面不存在，或已移入 WEB-INF 保护目录' : (code == 403 ? '需要管理员权限才能访问该页面' : '系统繁忙，请稍后重试')}"/>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>

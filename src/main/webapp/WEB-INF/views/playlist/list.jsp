@@ -54,6 +54,7 @@
       <c:choose>
         <c:when test="${not empty sessionScope.userId}">
           <div class="nav-user">
+            <c:if test="${sessionScope.role eq 'ADMIN'}"><a href="${pageContext.request.contextPath}/admin">后台管理</a></c:if>
             <a href="${pageContext.request.contextPath}/my-favorites">我的收藏</a>
             <span class="nav-name"><c:out value="${sessionScope.username}"/></span>
             <a href="${pageContext.request.contextPath}/logout">注销</a>
