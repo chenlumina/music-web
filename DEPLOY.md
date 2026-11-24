@@ -9,9 +9,20 @@
 - Maven 3.8+（项目自带 `mvnw`，无需全局安装）
 - Apache Tomcat **9.0.x**（Servlet 4.0）。**不能使用 Tomcat 10+**：Tomcat 10 改用 jakarta.servlet，本项目的 javax.servlet 代码无法部署
 - MySQL 8.0（库名 `music_web`，字符集 utf8mb4）
-- 默认端口：Tomcat 8080、MySQL 3306（可改，需同步修改访问地址/连接串）
+- 端口：本机验证使用 Tomcat 9532、MySQL 3306；Docker Compose 使用宿主 9540；Tomcat 默认 8080，可在 `conf/server.xml` 调整
 
-## 2. 免构建部署（quick-deploy）
+## 2.1 Docker Compose 部署（推荐）
+
+仓库根目录已提供 `Dockerfile` 与 `docker-compose.yml`；Compose 同时启动 Tomcat 9 和 MySQL 8，MySQL 自动执行 `quick-deploy/init.sql`：
+
+```bash
+docker compose up -d --build
+docker compose ps
+curl http://localhost:9540/music-web/health
+# 外部设备（同局域网）：http://<宿主机IP>:9540/music-web/
+```
+
+## 2.2 免构建部署（quick-deploy）
 
 `quick-deploy/` 已提供预构建 WAR 与初始化脚本：
 
@@ -23,7 +34,7 @@ mysql -uroot -p < quick-deploy/init.sql
 copy quick-deploy\music-web.war <CATALINA_BASE>\webapps\
 
 # 3) 启动 Tomcat 9 后访问
-#    http://localhost:8080/music-web/
+#    http://localhost:9532/music-web/
 #    演示账号 admin / admin123
 ```
 
@@ -53,7 +64,7 @@ copy target\music-web.war <CATALINA_BASE>\webapps\
 ```
 
 启动日志中应出现 `Deployment of web application archive [...]\music-web.war has finished`，
-随后访问 `http://localhost:8080/music-web/` 返回首页。
+随后访问 `http://localhost:9532/music-web/` 返回首页。
 
 ## 4. 配置外置
 
@@ -66,7 +77,7 @@ copy target\music-web.war <CATALINA_BASE>\webapps\
 
 ```bash
 # 一键断言（第 1 个参数为应用根地址）
-bash verify-deploy.sh http://localhost:8080/music-web
+bash verify-deploy.sh http://localhost:9532/music-web
 ```
 
 脚本检查首页、登录页、歌单详情、列表 API、标签 API、sitemap 均返回 200，
@@ -79,7 +90,7 @@ bash verify-deploy.sh http://localhost:8080/music-web
 
 | 现象 | 根因 | 处理 |
 |---|---|---|
-| 启动报 `BindException: Address already in use: bind` | 8080 已被其它 Tomcat 占用 | `netstat -ano | findstr :8080` 找到 PID，停止占用进程或修改 `conf/server.xml` 的 Connector port |
+| 启动报 `BindException: Address already in use: bind` | 目标端口（示例 9532）已被其它 Tomcat 占用 | `netstat -ano | findstr :9532` 找到 PID，停止占用进程或修改 `conf/server.xml` 的 Connector port |
 | 页面报 `ClassNotFoundException: javax.servlet.http.HttpServlet` 或 JSP 标签库不解析 | 误用 Tomcat 10+（jakarta.servlet） | 改用 Tomcat 9.0.x；本项目不得出现 jakarta.* |
 | 启动日志无 Deployment 行、访问 404 | WAR 未放入 webapps 或上下文路径不符 | 确认文件名为 `music-web.war`，访问路径为 `/music-web/` |
 | 登录/接口报数据库连接失败（Access denied / Communications link failure） | 账号密码、端口或 MySQL 未启动 | 核对 `db.properties`；`mysql -uroot -p` 可连通后重启应用 |

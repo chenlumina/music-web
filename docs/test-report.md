@@ -2,8 +2,8 @@
 
 - 日期：2026-11-24
 - 被测版本：完整前台 + 运营后台（Java EE 8 / JDBC 版，构建 `target/music-web.war`）
-- 测试环境：Windows 10 + Tomcat 9.0.117（独立实例，端口 8080）+ JDK 11 + MySQL 8.0.46（music_web 库，种子数据）
-- 方式：接口断言（HTTP/JSON，90 项）+ 浏览器实测（Puppeteer 桌面 1440×900 与 430px 移动视口）
+- 测试环境：Windows 10 + Tomcat 9.0.117（本机实例，端口 9532，上下文 `/music-web`）+ JDK 11 + MySQL 8.0.46（music_web 库，种子数据）
+- 方式：接口断言（HTTP/JSON，90 项，9532 端口复跑 90/90）+ 浏览器实测（Puppeteer 桌面 1440×900 与 430px 移动视口；截图采集于 8080 的同一构建）
 
 ## 必测用例（开发手册 10.2）
 

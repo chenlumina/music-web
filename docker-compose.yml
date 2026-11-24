@@ -1,0 +1,31 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: music_web
+      TZ: Asia/Shanghai
+    volumes:
+      - ./quick-deploy/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - music_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:mysql://db:3306/music_web?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useUnicode=true
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+      TZ: Asia/Shanghai
+    ports:
+      - "9540:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  music_db:

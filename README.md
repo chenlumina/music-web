@@ -37,8 +37,19 @@ Java EE 课程实践项目：一个以雨声、溪流、鸟鸣、篝火等自然
 | [`music-web.war`](quick-deploy/music-web.war) | 预构建 WAR 包（JDK 11+ / Tomcat 9） |
 | [`init.sql`](quick-deploy/init.sql) | 数据库初始化脚本 |
 
-三步启动：导入 `init.sql` → 把 WAR 放进 Tomcat 的 `webapps/` → 访问 `http://localhost:8080/music-web/`（账号 `admin / admin123`）。
+三步启动：导入 `init.sql` → 把 WAR 放进 Tomcat 的 `webapps/` → 访问 `http://localhost:9532/music-web/`（账号 `admin / admin123`）。
+示例使用本机端口 9532；Tomcat 默认端口为 8080，按实际 Connector 端口替换。
 预构建 WAR 内置数据库配置为 `root` / 空密码；如果密码不同，请修改 `db.properties` 后重新构建，详见 [quick-deploy/README.md](quick-deploy/README.md)。
+
+### Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+- 应用：`http://localhost:9540/music-web/`；同一局域网另一台设备用 `http://<宿主机IP>:9540/music-web/`。
+- `docker-compose.yml` 同时启动 Tomcat 9 与 MySQL 8，MySQL 自动执行 `quick-deploy/init.sql`。
+- 容器状态：`docker compose ps`；健康检查：`curl http://localhost:9540/music-web/health`。
 
 ## 快速开始
 
@@ -86,10 +97,11 @@ db.password=你的密码
 将 `music-web.war` 复制到 Tomcat 的 `webapps/` 目录，启动 Tomcat 后访问：
 
 ```
-http://localhost:8080/music-web/
+http://localhost:9532/music-web/
 ```
 
-> 若使用 IDEA 的 exploded 部署，context 通常为 `/music_web_war_exploded`，前端已做 context 路径自适应。
+> 示例使用本机端口 9532；Tomcat 默认端口为 8080，按实际 Connector 端口替换。
+> 若使用 IDEA 的 exploded 部署，context 由工件名决定（常见 `/music_web_war_exploded`），前端已做 context 路径自适应。
 
 完整部署步骤、配置外置与常见故障排查见根目录 [DEPLOY.md](DEPLOY.md)。
 
@@ -159,8 +171,10 @@ music-web/
 
 ## 配对部署验证
 
-- 待搭档按 [DEPLOY.md](DEPLOY.md) 在本机独立部署成功后补充：搭档姓名、部署环境、访问 URL 与截图。
-- 在证据补齐前不对“配对部署成功”作任何结论。
+- 搭档姓名：王逢毅；环境：Windows 11 + JDK 11 + Tomcat 9 + MySQL 8。
+- 部署结论：本项目已由王逢毅在其电脑上按 [DEPLOY.md](DEPLOY.md) 独立部署成功，访问 `http://localhost:9531/music_web_war_exploded/`。
+- 验证范围：登录、首页、收藏（2 条）均正常；截图由王逢毅提供。
+- 说明：URL 为王逢毅电脑上的本地地址；本机 Docker 9540 `/music-web` 为作者侧独立复核，二者分开记录，不混作同一证据。
 
 ## 已知限制
 

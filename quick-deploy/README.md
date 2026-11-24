@@ -37,8 +37,10 @@ mysql -uroot -p < init.sql
 ### 3. 访问
 
 ```
-http://localhost:8080/music-web/
+http://localhost:9532/music-web/
 ```
+
+示例使用本机端口 9532；Tomcat 默认端口为 8080，按实际 Connector 端口替换。
 
 演示账号：`admin / admin123`（管理员，可进入运营后台）。
 

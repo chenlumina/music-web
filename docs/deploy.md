@@ -14,9 +14,9 @@
 
 1. 将 `music-web.war` 复制到 Tomcat 的 `webapps/` 目录，启动即自动解压部署。
 2. 访问 `http://<host>:<port>/music-web/`。
-3. 默认 HTTP 端口为 8080，可在 `conf/server.xml` 中调整。
+3. Tomcat 默认 HTTP 端口为 8080；本项目本机验证使用 9532，可在 `conf/server.xml` 中调整。
 
-> IDEA exploded 部署（开发用）：IDEA 中 Redeploy 即可，context 为 `/music_web_war_exploded`；前端 JS 会自动识别 context 前缀。
+> IDEA exploded 部署（开发用）：本机实例通过 `conf/Catalina/localhost/music-web.xml` 挂到 `/music-web`；若使用 IDEA 默认 exploded context（常见 `/music_web_war_exploded`），前端 JS 会自动识别 context 前缀。
 
 ## 3. 配置外置（开发手册 11 章）
 

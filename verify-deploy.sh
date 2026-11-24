@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # music-web 部署后验证脚本：断言关键页面/接口可用，任一失败退出码 1。
-# 用法：bash verify-deploy.sh [http://localhost:8080/music-web]
+# 用法：bash verify-deploy.sh [http://localhost:9532/music-web]
 set -u
 
-BASE=${1:-http://localhost:8080/music-web}
+BASE=${1:-http://localhost:9532/music-web}
 fail=0
 
 check() {
