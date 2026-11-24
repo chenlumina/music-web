@@ -29,6 +29,7 @@ public class Playlist {
     public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
     public ShelfStatus getStatus() { return status; }
     public void setStatus(ShelfStatus status) { this.status = status; }
+    public boolean isOnline() { return status == ShelfStatus.ONLINE; }
     public int getFavoriteCount() { return favoriteCount; }
     public void setFavoriteCount(int favoriteCount) { this.favoriteCount = favoriteCount; }
     public LocalDateTime getCreatedAt() { return createdAt; }

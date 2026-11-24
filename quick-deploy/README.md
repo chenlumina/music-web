@@ -10,7 +10,7 @@
 校验值：
 
 ```
-SHA-256 music-web.war  3ca7045cbf1f0b3318182541ca8c25de5ddb1e5fd93f8d0dc0d5122f9db2dbfb
+SHA-256 music-web.war  7879631163f51bbf9ef17de3da62fc0ff6d8f633d92249d675176588f3eb9ff5
 SHA-256 init.sql       7489ce430502af51864319b2f4414c3a53e702d4270a68cd9218f3a83ba14569
 ```
 

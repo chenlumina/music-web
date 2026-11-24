@@ -91,6 +91,8 @@ http://localhost:8080/music-web/
 
 > 若使用 IDEA 的 exploded 部署，context 通常为 `/music_web_war_exploded`，前端已做 context 路径自适应。
 
+完整部署步骤、配置外置与常见故障排查见根目录 [DEPLOY.md](DEPLOY.md)。
+
 ### 演示账号
 
 | 账号 | 密码 | 角色 |
@@ -98,6 +100,15 @@ http://localhost:8080/music-web/
 | `admin` | `admin123` | 管理员（可进入运营后台） |
 
 普通用户可在登录页切换到“注册”自行创建。
+
+## 课程实验附加页（非产品导航）
+
+为完成 JavaEE8 课程实验，项目内附以下非产品入口，不影响前台/后台正常页面与导航：
+
+- `/hello`：Servlet 映射、请求参数、响应编码与生命周期日志演示（实验一）
+- `/health`：数据库连通性健康检查，正常返回 `OK db=up`（实验七加固）
+- `/lab/playlists`：JSP + JSTL/EL + JDBC 的歌单列表/新增演示页（实验二/三，需登录，视图位于 `WEB-INF/views/lab/`）
+- `verify-deploy.sh`：部署后一键验证脚本（实验七加固）
 
 ## 目录结构
 
@@ -117,9 +128,12 @@ music-web/
 │   ├── index.jsp / playlist.jsp / error.jsp
 │   ├── login.html / my-favorites.html / admin.html
 │   ├── assets/       # 公共 JS、主题 CSS、内置图片
+│   ├── WEB-INF/views/lab/  # 实验二/三 JSP 演示页（仅经 Servlet 转发）
 │   └── robots.txt
 ├── quick-deploy/     # 免构建部署包（WAR + init.sql）
 ├── docs/             # 接口、部署、测试报告
+├── DEPLOY.md         # 从零部署 + 故障排查
+├── verify-deploy.sh  # 部署后一键验证
 └── pom.xml
 ```
 
@@ -142,6 +156,11 @@ music-web/
 - 上传文件按 UUID 重命名，读取接口使用文件名白名单，避免路径穿越。
 - 部署与上线检查清单见 [docs/deploy.md](docs/deploy.md)。
 - 联调验收记录见 [docs/test-report.md](docs/test-report.md)。
+
+## 配对部署验证
+
+- 待搭档按 [DEPLOY.md](DEPLOY.md) 在本机独立部署成功后补充：搭档姓名、部署环境、访问 URL 与截图。
+- 在证据补齐前不对“配对部署成功”作任何结论。
 
 ## 已知限制
 

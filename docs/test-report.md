@@ -29,6 +29,7 @@
 | 结构化数据 | 通过 | 详情页输出 schema.org MusicPlaylist JSON-LD（`<` 已转义防脚本逃逸） |
 | XSS 防护 | 通过 | JSP 输出全部经 `c:out` 转义；测试数据含中文/标点正常显示 |
 | 后台歌单/标签/推荐位/上传 | 通过 | 新增歌单默认下架、上架需标签、曲目整体替换、标签强制删除联动下架、封面上传与伪造文件拦截均验证通过 |
+| 课程实验附加页 | 通过 | `/hello` 返回参数与服务器时间；`/health` 200 `OK db=up`；`/lab/playlists` 未登录 302 → login.html，登录后 JSP 列表/新增正常；`verify-deploy.sh` 输出 `DEPLOY OK` |
 
 ## 回归与修复记录
 
