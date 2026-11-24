@@ -1,97 +1,106 @@
 package com.chenlumina.musicweb.dao;
 
-import com.chenlumina.musicweb.entity.Playlist;
-import com.chenlumina.musicweb.util.DaoException;
-import com.chenlumina.musicweb.util.DbUtil;
+import com.chenlumina.musicweb.entity.Recommendation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/** 推荐持久层：推荐标记与上架推荐歌单查询 */
+/** 推荐位读写：前台只读启用项，后台维护全部配置（开发手册 5.4，纯配置无算法） */
 public class RecommendDao {
 
-    public boolean exists(long playlistId) {
-        String sql = "select count(*) from recommendations where playlist_id = ?";
-        try (Connection conn = DbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, playlistId);
+    public List<Recommendation> findEnabled(Connection conn) throws SQLException {
+        return query(conn, "select " + COLS + " from recommendations where enabled = 1 "
+                + "order by sort_order asc, id asc");
+    }
+
+    /** 后台：全部推荐位（含停用），按排序（开发手册 5.6） */
+    public List<Recommendation> findAll(Connection conn) throws SQLException {
+        return query(conn, "select " + COLS + " from recommendations order by sort_order asc, id asc");
+    }
+
+    public Recommendation findById(Connection conn, long id) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "select " + COLS + " from recommendations where id = ?")) {
+            ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getLong(1) > 0;
+                return rs.next() ? map(rs) : null;
             }
-        } catch (SQLException e) {
-            throw new DaoException("查询推荐状态失败", e);
         }
     }
 
-    public void add(long playlistId) {
-        String sql = "insert into recommendations (playlist_id) values (?)";
-        try (Connection conn = DbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, playlistId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new DaoException("加入推荐失败", e);
-        }
-    }
+    private static final String COLS =
+            "id, title, image_url, playlist_id, sort_order, enabled";
 
-    public void remove(long playlistId) {
-        String sql = "delete from recommendations where playlist_id = ?";
-        try (Connection conn = DbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, playlistId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new DaoException("取消推荐失败", e);
-        }
-    }
-
-    /** 上架且被推荐的歌单，按推荐排序 */
-    public List<Playlist> findOnlineRecommended() {
-        String sql = "select p.id, p.title, p.description, p.cover_url, p.status, "
-                + "p.favorite_count, p.created_at from playlists p "
-                + "join recommendations r on r.playlist_id = p.id "
-                + "where p.status = 'ONLINE' order by r.sort_order, r.id";
-        List<Playlist> result = new ArrayList<>();
-        try (Connection conn = DbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+    private List<Recommendation> query(Connection conn, String sql) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+            List<Recommendation> list = new ArrayList<>();
             while (rs.next()) {
-                result.add(mapRow(rs));
+                list.add(map(rs));
             }
-        } catch (SQLException e) {
-            throw new DaoException("查询推荐歌单失败", e);
+            return list;
         }
-        return result;
     }
 
-    public List<Long> findIds() {
-        String sql = "select playlist_id from recommendations";
-        List<Long> ids = new ArrayList<>();
-        try (Connection conn = DbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                ids.add(rs.getLong(1));
+    public long insert(Connection conn, Recommendation r) throws SQLException {
+        String sql = "insert into recommendations "
+                + "(title, image_url, playlist_id, sort_order, enabled, created_at, updated_at) "
+                + "values (?, ?, ?, ?, ?, now(), now())";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, r.getTitle());
+            ps.setString(2, r.getImageUrl());
+            setNullableLong(ps, 3, r.getPlaylistId());
+            ps.setInt(4, r.getSortOrder());
+            ps.setBoolean(5, r.isEnabled());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    long id = keys.getLong(1);
+                    r.setId(id);
+                    return id;
+                }
             }
-        } catch (SQLException e) {
-            throw new DaoException("查询推荐ID失败", e);
         }
-        return ids;
+        throw new SQLException("插入推荐位后未取得自增主键");
     }
 
-    private Playlist mapRow(ResultSet rs) throws SQLException {
-        Playlist playlist = new Playlist();
-        playlist.setId(rs.getLong("id"));
-        playlist.setTitle(rs.getString("title"));
-        playlist.setDescription(rs.getString("description"));
-        playlist.setCoverUrl(rs.getString("cover_url"));
-        playlist.setStatus(rs.getString("status"));
-        playlist.setFavoriteCount(rs.getInt("favorite_count"));
-        playlist.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        return playlist;
+    public void update(Connection conn, Recommendation r) throws SQLException {
+        String sql = "update recommendations set title = ?, image_url = ?, playlist_id = ?, "
+                + "sort_order = ?, enabled = ?, updated_at = now() where id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, r.getTitle());
+            ps.setString(2, r.getImageUrl());
+            setNullableLong(ps, 3, r.getPlaylistId());
+            ps.setInt(4, r.getSortOrder());
+            ps.setBoolean(5, r.isEnabled());
+            ps.setLong(6, r.getId());
+            ps.executeUpdate();
+        }
+    }
+
+    private void setNullableLong(PreparedStatement ps, int index, Long value) throws SQLException {
+        if (value == null) {
+            ps.setNull(index, Types.BIGINT);
+        } else {
+            ps.setLong(index, value);
+        }
+    }
+
+    private Recommendation map(ResultSet rs) throws SQLException {
+        Recommendation r = new Recommendation();
+        r.setId(rs.getLong("id"));
+        r.setTitle(rs.getString("title"));
+        r.setImageUrl(rs.getString("image_url"));
+        long playlistId = rs.getLong("playlist_id");
+        r.setPlaylistId(rs.wasNull() ? null : playlistId);
+        r.setSortOrder(rs.getInt("sort_order"));
+        r.setEnabled(rs.getBoolean("enabled"));
+        return r;
     }
 }

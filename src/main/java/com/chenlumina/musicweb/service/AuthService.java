@@ -2,55 +2,63 @@ package com.chenlumina.musicweb.service;
 
 import com.chenlumina.musicweb.dao.UserDao;
 import com.chenlumina.musicweb.entity.User;
-import com.chenlumina.musicweb.util.ValidateException;
+import com.chenlumina.musicweb.util.ApiException;
+import com.chenlumina.musicweb.util.DbUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.regex.Pattern;
 
-/**
- * 认证业务：BCrypt 校验摘要、失败统一文案不泄露账号是否存在、
- * 用户不存在时空跑一次 BCrypt 抹平耗时差异；注册时校验用户名格式与唯一性。
- */
+/** 注册登录业务；登录失败统一文案不泄露账号是否存在（开发手册 5.5） */
 public class AuthService {
+
+    private static final Pattern USERNAME = Pattern.compile("^[A-Za-z0-9_]{3,20}$");
 
     /** 用于用户不存在时空跑 BCrypt，抹平响应耗时差异，防时序探测 */
     private static final String DUMMY_HASH = BCrypt.hashpw("timing", BCrypt.gensalt(4));
 
-    private static final Pattern USERNAME = Pattern.compile("^[A-Za-z0-9_]{3,20}$");
-
     private final UserDao userDao = new UserDao();
 
-    /** 注册：用户名 3-20 位字母/数字/下划线，密码 6-64 位，用户名唯一；成功返回新用户 */
     public User register(String username, String password) {
-        String safeName = username == null ? "" : username.trim();
-        if (!USERNAME.matcher(safeName).matches()) {
-            throw new ValidateException("用户名须为 3-20 位字母、数字或下划线");
+        if (username == null || !USERNAME.matcher(username).matches()) {
+            throw new ApiException(400, "用户名须为 3-20 位字母/数字/下划线");
         }
         if (password == null || password.length() < 6 || password.length() > 64) {
-            throw new ValidateException("密码长度须为 6-64 位");
+            throw new ApiException(400, "密码长度须为 6-64 位");
         }
-        if (userDao.existsByUsername(safeName)) {
-            throw new ValidateException("用户名已被占用");
+        try {
+            return DbUtil.inTransaction(conn -> {
+                if (userDao.existsByUsername(conn, username)) {
+                    throw new ApiException(400, "用户名已被占用");
+                }
+                User user = new User();
+                user.setUsername(username);
+                user.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt(10)));
+                user.setRole("USER");
+                userDao.insert(conn, user);
+                return user;
+            });
+        } catch (ApiException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            // 并发注册时由 username 唯一约束兜底
+            if (DbUtil.isDuplicateKey(e)) {
+                throw new ApiException(400, "用户名已被占用");
+            }
+            throw e;
         }
-        User user = new User();
-        user.setUsername(safeName);
-        user.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt(10)));
-        user.setRole("USER");
-        user.setId(userDao.insert(user));
-        return user;
     }
 
     public User login(String username, String password) {
-        if (username == null || password == null || username.trim().isEmpty() || password.isEmpty()) {
-            throw new ValidateException("用户名或密码错误");
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            throw new ApiException(401, "用户名或密码错误");
         }
-        User user = userDao.findByUsername(username.trim());
+        User user = DbUtil.withConnection(conn -> userDao.findByUsername(conn, username.trim()).orElse(null));
         if (user == null) {
             BCrypt.checkpw(password, DUMMY_HASH);
-            throw new ValidateException("用户名或密码错误");
+            throw new ApiException(401, "用户名或密码错误");
         }
         if (!BCrypt.checkpw(password, normalizeHash(user.getPasswordHash()))) {
-            throw new ValidateException("用户名或密码错误");
+            throw new ApiException(401, "用户名或密码错误");
         }
         return user;
     }

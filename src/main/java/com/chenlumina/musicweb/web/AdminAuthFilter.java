@@ -1,20 +1,19 @@
 package com.chenlumina.musicweb.web;
 
+import com.chenlumina.musicweb.util.JsonUtil;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * 后台门禁：/admin 与 /admin/* 仅 ADMIN 角色可访问。
- * 未登录 → 302 登录页；已登录但非 ADMIN → 403（error-page 统一展示）。
- * 在 web.xml 中排在编码过滤器之后。
- */
+/** 后台权限入口：/api/admin/** 仅 ADMIN 角色可访问（开发手册 5.6/9.1，必测用例 7） */
+@WebFilter("/api/admin/*")
 public class AdminAuthFilter implements Filter {
 
     @Override
@@ -22,13 +21,13 @@ public class AdminAuthFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+        Long userId = AuthServlet.currentUserId(req);
+        if (userId == null) {
+            JsonUtil.error(resp, 401, "请先登录");
             return;
         }
-        if (!"ADMIN".equals(session.getAttribute("role"))) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+        if (!"ADMIN".equals(req.getSession(false).getAttribute("role"))) {
+            JsonUtil.error(resp, 403, "无权限访问后台");
             return;
         }
         chain.doFilter(request, response);

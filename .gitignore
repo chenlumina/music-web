@@ -1,8 +1,11 @@
+# build output
 target/
-*.class
-*.war
+# IDE
 .idea/
 *.iml
-.vscode/
-.DS_Store
+# logs
 *.log
+logs/
+# os
+.DS_Store
+Thumbs.db

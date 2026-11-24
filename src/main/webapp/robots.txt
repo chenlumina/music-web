@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: http://localhost:9531/music-web/sitemap.xml
+Disallow: /api/
+Disallow: /admin.html

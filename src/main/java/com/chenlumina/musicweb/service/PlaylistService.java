@@ -1,95 +1,68 @@
 package com.chenlumina.musicweb.service;
 
 import com.chenlumina.musicweb.dao.PlaylistDao;
+import com.chenlumina.musicweb.dto.PageDto;
+import com.chenlumina.musicweb.dto.PlaylistCardDto;
+import com.chenlumina.musicweb.dto.PlaylistDetailDto;
+import com.chenlumina.musicweb.dto.TrackDto;
 import com.chenlumina.musicweb.entity.Playlist;
-import com.chenlumina.musicweb.util.ValidateException;
+import com.chenlumina.musicweb.entity.ShelfStatus;
+import com.chenlumina.musicweb.entity.Tag;
+import com.chenlumina.musicweb.entity.Track;
+import com.chenlumina.musicweb.util.DbUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-/**
- * 歌单业务层：表单校验、业务规则都放这里，Servlet 只负责取参数和转发。
- * 规则沿用原始项目：标题必填且唯一、状态只允许 ONLINE/OFFLINE、前台只展示上架歌单。
- */
+/** 歌单业务：标签筛选、服务端分页、详情（前台仅上架可见） */
 public class PlaylistService {
-
-    private static final int TITLE_MAX = 100;
-    private static final int DESC_MAX = 500;
-    private static final Set<String> ALLOWED_STATUS = Set.of("ONLINE", "OFFLINE");
 
     private final PlaylistDao playlistDao = new PlaylistDao();
 
-    public List<Playlist> listPage(int page, int size) {
-        int safePage = Math.max(page, 1);
-        return playlistDao.findPage((safePage - 1) * size, size);
+    public PageDto<PlaylistCardDto> search(ShelfStatus status, String tagName, int page, int size) {
+        return DbUtil.withConnection(conn -> {
+            List<Playlist> list = playlistDao.search(conn, status, tagName, page, size);
+            long total = playlistDao.count(conn, status, tagName);
+            List<Long> ids = list.stream().map(Playlist::getId).collect(Collectors.toList());
+            Map<Long, List<Tag>> tagMap = playlistDao.tagsOf(conn, ids);
+            List<PlaylistCardDto> cards = new ArrayList<>();
+            for (Playlist p : list) {
+                cards.add(toCard(p, tagMap.getOrDefault(p.getId(), Collections.emptyList())));
+            }
+            return new PageDto<>(cards, total, page, size);
+        });
     }
 
-    public long countAll() {
-        return playlistDao.countAll();
+    public Optional<PlaylistDetailDto> detail(Long id) {
+        return DbUtil.withConnection(conn -> {
+            Playlist p = playlistDao.findOnlineById(conn, id);
+            if (p == null) {
+                return Optional.empty();
+            }
+            List<TrackDto> tracks = new ArrayList<>();
+            for (Track t : playlistDao.tracksOf(conn, id)) {
+                tracks.add(new TrackDto(t.getTrackNo(), t.getTitle(), t.getDurationSec()));
+            }
+            List<String> tags = names(playlistDao.tagsOfOne(conn, id));
+            return Optional.of(new PlaylistDetailDto(p.getId(), p.getTitle(), p.getDescription(),
+                    p.getCoverUrl(), tags, p.getFavoriteCount(), tracks));
+        });
     }
 
-    /**
-     * 新增歌单。校验不通过时抛 ValidateException，由 Servlet 回显到表单。
-     * 注意：校验失败必须在写库之前完成，不能先插入再判断。
-     */
-    public long create(String title, String description, String coverUrl, String status) {
-        String safeTitle = title == null ? "" : title.trim();
-        String safeDesc = description == null ? "" : description.trim();
-        String safeStatus = (status == null || status.trim().isEmpty())
-                ? "ONLINE" : status.trim().toUpperCase();
-        checkBasic(safeTitle, safeDesc, safeStatus);
-
-        if (playlistDao.countByTitle(safeTitle) > 0) {
-            throw new ValidateException("歌单标题「" + safeTitle + "」已存在，请换一个");
-        }
-
-        String safeCover = coverUrl == null ? "" : coverUrl.trim();
-        return playlistDao.insert(new Playlist(safeTitle, safeDesc, safeCover, safeStatus));
+    private PlaylistCardDto toCard(Playlist p, List<Tag> tags) {
+        return new PlaylistCardDto(p.getId(), p.getTitle(), p.getCoverUrl(),
+                names(tags), p.getFavoriteCount());
     }
 
-    /**
-     * 编辑更新。与新增共用基础校验，但标题查重排除自身（允许保留原标题）。
-     * 真实业务规则：状态改为 OFFLINE 后前台立即不可见（见 listOnline）。
-     */
-    public int update(long id, String title, String description, String coverUrl, String status) {
-        String safeTitle = title == null ? "" : title.trim();
-        String safeDesc = description == null ? "" : description.trim();
-        String safeStatus = (status == null || status.trim().isEmpty())
-                ? "ONLINE" : status.trim().toUpperCase();
-        checkBasic(safeTitle, safeDesc, safeStatus);
-
-        if (playlistDao.countByTitleExcludeId(safeTitle, id) > 0) {
-            throw new ValidateException("歌单标题「" + safeTitle + "」已存在，请换一个");
+    private List<String> names(List<Tag> tags) {
+        List<String> names = new ArrayList<>();
+        for (Tag t : tags) {
+            names.add(t.getName());
         }
-
-        String safeCover = coverUrl == null ? "" : coverUrl.trim();
-        Playlist playlist = new Playlist(safeTitle, safeDesc, safeCover, safeStatus);
-        playlist.setId(id);
-        return playlistDao.update(playlist);
-    }
-
-    public Playlist getById(long id) {
-        return playlistDao.findById(id);
-    }
-
-    /** 前台只读列表：仅上架歌单可见 */
-    public List<Playlist> listOnline() {
-        return playlistDao.findOnline();
-    }
-
-    /** 新增/编辑共用的基础校验，消除两处重复 */
-    private void checkBasic(String safeTitle, String safeDesc, String safeStatus) {
-        if (safeTitle.isEmpty()) {
-            throw new ValidateException("歌单标题不能为空");
-        }
-        if (safeTitle.length() > TITLE_MAX) {
-            throw new ValidateException("歌单标题不能超过 " + TITLE_MAX + " 个字符");
-        }
-        if (safeDesc.length() > DESC_MAX) {
-            throw new ValidateException("歌单描述不能超过 " + DESC_MAX + " 个字符");
-        }
-        if (!ALLOWED_STATUS.contains(safeStatus)) {
-            throw new ValidateException("歌单状态只能是 ONLINE 或 OFFLINE");
-        }
+        return names;
     }
 }

@@ -1,6 +1,6 @@
 package com.chenlumina.musicweb.web;
 
-import com.chenlumina.musicweb.util.UploadStore;
+import com.chenlumina.musicweb.util.UploadUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -9,35 +9,33 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-/** 上传封面读取：/covers/<filename>，带路径穿越防护 */
+/** 封面静态读取：文件名由服务端 UUID 生成并白名单校验，天然防路径穿越（开发手册 4.3/9.1） */
 @WebServlet(name = "coverServlet", urlPatterns = "/covers/*")
 public class CoverServlet extends HttpServlet {
 
+    private static final Pattern NAME = Pattern.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(jpg|jpeg|png|webp)");
+    private static final Map<String, String> MIME = Map.of(
+            "jpg", "image/jpeg", "jpeg", "image/jpeg", "png", "image/png", "webp", "image/webp");
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String name = req.getPathInfo();
-        if (name != null && name.startsWith("/")) {
-            name = name.substring(1);
-        }
-        Path file = UploadStore.find(name);
-        if (file == null) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        String name = req.getPathInfo() == null ? "" : req.getPathInfo().substring(1);
+        if (!NAME.matcher(name).matches()) {
+            resp.sendError(404);
             return;
         }
-        String lower = name.toLowerCase();
-        String contentType;
-        if (lower.endsWith(".png")) {
-            contentType = "image/png";
-        } else if (lower.endsWith(".gif")) {
-            contentType = "image/gif";
-        } else if (lower.endsWith(".webp")) {
-            contentType = "image/webp";
-        } else {
-            contentType = "image/jpeg";
+        Path file = UploadUtil.coverDir().resolve(name);
+        if (!Files.isRegularFile(file)) {
+            resp.sendError(404);
+            return;
         }
-        resp.setContentType(contentType);
-        resp.setHeader("Cache-Control", "max-age=86400");
+        String ext = name.substring(name.lastIndexOf('.') + 1);
+        resp.setContentType(MIME.get(ext));
+        resp.setHeader("Cache-Control", "public, max-age=86400");
         Files.copy(file, resp.getOutputStream());
     }
 }

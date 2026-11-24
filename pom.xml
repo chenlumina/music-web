@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.chenlumina</groupId>
   <artifactId>music-web</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -12,39 +11,49 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <!-- Java EE 8 课程基线：JDK 11 编译，Tomcat 9 (Servlet 4.0) 运行 -->
+    <maven.compiler.release>11</maven.compiler.release>
   </properties>
 
   <dependencies>
-    <!-- JavaEE8 Servlet API：由 Tomcat9 容器提供，不打进 WAR，scope 必须是 provided -->
+    <!-- Web 层：Servlet 4.0（Tomcat 9 提供，不打进 war） -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>4.0.1</version>
       <scope>provided</scope>
     </dependency>
-    <!-- JSP API：编译 JSP 脚本片段时需要，同样由容器提供 -->
     <dependency>
       <groupId>javax.servlet.jsp</groupId>
       <artifactId>javax.servlet.jsp-api</artifactId>
       <version>2.3.3</version>
       <scope>provided</scope>
     </dependency>
-    <!-- MySQL8 JDBC 驱动：必须打进 WAR 的 WEB-INF/lib，scope 为默认 compile -->
-    <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
-      <version>8.0.33</version>
-    </dependency>
-    <!-- JSTL 1.2：c/fmt 标准标签替代 JSP 脚本片段，实现类必须打进 WAR -->
+    <!-- JSP 标签库 JSTL 1.2（页面渲染用，随 war 发布） -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>jstl</artifactId>
       <version>1.2</version>
     </dependency>
-    <!-- jBCrypt 0.4：密码 BCrypt 摘要，沿用 music-web 的存储规则；纯 Java 库，与 JavaEE8 兼容 -->
+    <!-- 持久层：JDBC + MySQL 8 驱动，连接由 DbUtil 统一管理 -->
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.0.33</version>
+    </dependency>
+    <!-- JSON 序列化（接口返回 code/message/data） -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+    <!-- Java 8 时间类型（LocalDateTime）序列化支持 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>2.17.2</version>
+    </dependency>
+    <!-- 密码加密 BCrypt -->
     <dependency>
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
@@ -57,14 +66,10 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.1</version>
         <configuration>
+          <!-- Servlet/Filter 全部使用注解声明，不需要 web.xml -->
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
       </plugin>

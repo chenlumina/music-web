@@ -1,102 +1,42 @@
 package com.chenlumina.musicweb.entity;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-/** 歌单：对应 music_web.playlists，前台只展示 ONLINE 状态 */
+/** 歌单实体：纯 POJO，由 JDBC DAO 组装；对象关系不依赖任何 ORM 框架 */
 public class Playlist {
 
-    private long id;
+    private Long id;
     private String title;
     private String description;
     private String coverUrl;
-    private String status;
-    private LocalDateTime createdAt;
+    private ShelfStatus status = ShelfStatus.ONLINE;
+    /** 收藏数冗余计数（允许准实时，开发手册 9.2） */
     private int favoriteCount;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private List<Tag> tags = new ArrayList<>();
+    private List<Track> tracks = new ArrayList<>();
 
-    public Playlist() {
-    }
-
-    public Playlist(String title, String description, String coverUrl, String status) {
-        this.title = title;
-        this.description = description;
-        this.coverUrl = coverUrl;
-        this.status = status;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCoverUrl() {
-        return coverUrl;
-    }
-
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public int getFavoriteCount() {
-        return favoriteCount;
-    }
-
-    public void setFavoriteCount(int favoriteCount) {
-        this.favoriteCount = favoriteCount;
-    }
-
-    /** 封面路径：上传文件（up- 前缀）走 /covers/*，静态图片走 /assets/img */
-    public String getCoverPath() {
-        if (coverUrl == null || coverUrl.isEmpty()) {
-            return "";
-        }
-        return coverUrl.startsWith("up-") ? "/covers/" + coverUrl : "/assets/img/" + coverUrl;
-    }
-
-    /** 供 JSTL fmt:formatDate 使用：LocalDateTime 转 java.util.Date */
-    public Date getCreatedAtDate() {
-        return createdAt == null ? null
-                : Date.from(createdAt.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    /** 与原始项目保持一致：只有 ONLINE 才在前台可见 */
-    public boolean isOnline() {
-        return "ONLINE".equals(status);
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
+    public ShelfStatus getStatus() { return status; }
+    public void setStatus(ShelfStatus status) { this.status = status; }
+    public int getFavoriteCount() { return favoriteCount; }
+    public void setFavoriteCount(int favoriteCount) { this.favoriteCount = favoriteCount; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public List<Tag> getTags() { return tags; }
+    public void setTags(List<Tag> tags) { this.tags = tags; }
+    public List<Track> getTracks() { return tracks; }
+    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
 }
