@@ -32,9 +32,9 @@ src/main/resources/db           init.sql / lab3-users.sql
 2. 连接配置：`src/main/resources/db.properties`（也可用环境变量 DB_URL / DB_USERNAME / DB_PASSWORD）
 3. 构建：`mvn clean package`
 4. 部署：将 `target/music-web.war` 放入 Tomcat9 的 `webapps/`
-5. 访问：http://localhost:8080/music-web/
+5. 访问：http://localhost:9531/music-web/
 6. 演示账号：admin / admin123、test01 / test123
-7. 部署后验证：`bash verify-deploy.sh http://localhost:8080/music-web`
+7. 部署后验证：`bash verify-deploy.sh http://localhost:9531/music-web`
 
 ## 部署
 见 `DEPLOY.md`；工件含 Dockerfile（tomcat:9-jdk11）、docker-compose.yml（MySQL 8）、verify-deploy.sh。

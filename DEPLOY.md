@@ -6,7 +6,7 @@
 ## 0. 环境前提
 - JDK 11（构建与运行），Maven 3.8+，MySQL 8（本地路径），或 Docker + Docker Compose（容器路径）。
 - Tomcat 9.0.x（本地路径）。容器路径无需本机 Tomcat。
-- 端口：应用 8080，MySQL 3306（容器路径可映射）。
+- 端口：应用 9531，MySQL 3306（容器路径可映射）。
 
 ## 1. 构建
 ```
@@ -41,17 +41,17 @@ docker compose up -d --build
 - 仅当 Docker 守护进程运行时可用；本文档在守护进程未运行的环境只作准备，未实际 run。
 
 ## 4. 验证访问
-- 首页：http://localhost:8080/music-web/
-- 登录：http://localhost:8080/music-web/login （admin/admin123 管理员；test01/test123 普通用户）
+- 首页：http://localhost:9531/music-web/
+- 登录：http://localhost:9531/music-web/login （admin/admin123 管理员；test01/test123 普通用户）
 - 后台列表（需登录）：/music-web/playlist ；新增 /playlist?action=new ；编辑 /playlist?action=edit&id=N
 - 前台只读（无需登录，仅上架）：/music-web/front
-- 健康检查：`curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/music-web/login` 期望 200。
-- 部署后一键验证：`bash verify-deploy.sh http://localhost:8080/music-web`（health/login/front 全 200 输出 DEPLOY OK）。
+- 健康检查：`curl -s -o /dev/null -w "%{http_code}" http://localhost:9531/music-web/login` 期望 200。
+- 部署后一键验证：`bash verify-deploy.sh http://localhost:9531/music-web`（health/login/front 全 200 输出 DEPLOY OK）。
 - 健康检查端点：`/music-web/health` 返回 200 `OK db=up` 表示应用与数据库均可用；503 `FAIL db=down` 表示数据库不可达。
-- 异机访问：将 localhost 换为部署主机 IP/域名（容器/云需开放 8080 安全组）；从另一台电脑或手机打开同一 URL。
+- 异机访问：将 localhost 换为部署主机 IP/域名（容器/云需开放 9531 安全组）；从另一台电脑或手机打开同一 URL。
 
 ## 5. 常见问题
-- 8080 被占用：日志 `java.net.BindException: Address already in use`；改 conf/server.xml 端口或停掉占用进程。
+- 9531 被占用：日志 `java.net.BindException: Address already in use`；改 conf/server.xml 端口或停掉占用进程。
 - 数据库连接失败：`Communications link failure`；检查 MySQL 是否启动、DB_URL 主机/端口、账号密码、容器路径主机应为 db 而非 localhost。
 - WAR 未解压/上下文错：访问 404；确认 webapps 下有 music-web.war 或 music-web/，上下文为 /music-web。
 - 中文乱码：确认 EncodingFilter 生效、数据库与连接串 utf8mb4；POST 体以 UTF-8 提交。
